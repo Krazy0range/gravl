@@ -21,9 +21,10 @@ int main(int argc, char *argv[])
         return 1;
     }
     
-    // Open and read file into fcontents
+    /*
+        Open and read file into fcontents
+    */
 
-    // Open file
     std::fstream file;
     file.open(argv[1], std::ios::in);
 
@@ -41,8 +42,12 @@ int main(int argc, char *argv[])
         return 2;
     }
 
+    // Lexer
 
-    Lexer lexer(fcontents);
+    struct LexerSettings lexerSettings;
+    lexerSettings.debug_words = false;
+    lexerSettings.debug_tokens = true;
+
+    Lexer lexer(fcontents, lexerSettings);
     lexer.lex();
-
 }
