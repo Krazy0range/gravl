@@ -1,0 +1,4 @@
+# ignore all object code files
+*.o
+# ignore build file
+/a.exe
