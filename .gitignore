@@ -2,3 +2,5 @@
 *.o
 # ignore build file
 /a.exe
+# ignore .vscode
+.vscode/

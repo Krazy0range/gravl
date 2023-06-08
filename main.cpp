@@ -3,7 +3,9 @@
 #include <sstream>
 #include <string>
 #include <cstring>
+
 #include "lexer.h"
+#include "parser.h"
 
 std::string fcontents;
 
@@ -50,4 +52,9 @@ int main(int argc, char *argv[])
 
     Lexer lexer(fcontents, lexerSettings);
     lexer.lex();
+
+    Parser parser(lexer.getTokens());
+    parser.parse();
+    parser.debug();
+
 }

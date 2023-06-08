@@ -25,6 +25,18 @@ class Token
         TokenType getType();
 };
 
+class TokenList
+{
+    private:
+        std::list<Token> tokens;
+        std::string tokentype_to_string(TokenType type, bool debug);
+
+    public:
+        void make_token(std::string word, TokenType type);
+        void debug();
+        std::list<Token> getTokens();
+};
+
 struct LexerSettings
 {
     bool debug_words;
@@ -36,12 +48,13 @@ class Lexer
     private:
         struct LexerSettings settings;
         std::string fcontent;
-        std::list<Token> tokens;
+        TokenList token_list;
         std::list<std::string> split(std::string text);
     
     public:
         Lexer(std::string fcontent, struct LexerSettings settings);
         ~Lexer() = default;
+        std::list<Token> getTokens();
         void lex();
 };
 

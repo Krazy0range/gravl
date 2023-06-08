@@ -65,46 +65,45 @@ Token::Token(std::string word, TokenType type)
     this->type = type;
 }
 
-class TokenList
+/*
+    TOKENLIST
+*/
+
+std::string TokenList::tokentype_to_string(TokenType type, bool debug)
 {
-    private:
-        std::list<Token> tokens;
+    switch (type)
+    {
+        case TokenType::datatype:   return "datatype";
+        case TokenType::identifier: return "identifier";
+        case TokenType::keyword:    return (debug ? "keyword " : "keyword");
+        case TokenType::literal:    return (debug ? "literal " : "literal");
+        case TokenType::endcommand: return "endcommand";
+        default:                    return "invalid";
+    }
+}
 
-        std::string tokentype_to_string(TokenType type, bool debug)
-        {
-            switch (type)
-            {
-                case TokenType::datatype:   return "datatype";
-                case TokenType::identifier: return "identifier";
-                case TokenType::keyword:    return (debug ? "keyword " : "keyword");
-                case TokenType::literal:    return (debug ? "literal " : "literal");
-                case TokenType::endcommand: return "endcommand";
-                default:                    return "invalid";
-            }
-        }
+void TokenList::make_token(std::string word, TokenType type)
+{
+    Token token(word, type);
+    tokens.push_back(token);
+}
 
-    public:
+void TokenList::debug()
+{
+    std::cout << "TOKENS\n";
+    std::cout << "\tTokens generated: " << tokens.size() << "\n";
+    auto iterator = tokens.begin();
+    for (int i = 0; i < tokens.size(); i++)
+    {
+        std::cout << "\t-\t" << tokentype_to_string(iterator->getType(), true) << '\t' << iterator->getWord() << '\n';
+        std::advance(iterator, 1);
+    }
+}
 
-        void make_token(std::string word, TokenType type)
-        {
-            Token token(word, type);
-            tokens.push_back(token);
-        }
-
-        void debug()
-        {
-            std::cout << "TOKENS\n";
-            std::cout << "\tTokens generated: " << tokens.size() << "\n";
-            auto iterator = tokens.begin();
-            for (int i = 0; i < tokens.size(); i++)
-            {
-                std::cout << "\t-\t" << tokentype_to_string(iterator->getType(), true) << '\t' << iterator->getWord() << '\n';
-                std::advance(iterator, 1);
-            }
-        }
-};
-
-TokenList tokenList;
+std::list<Token> TokenList::getTokens()
+{
+    return tokens;
+}
 
 /*
     ==============LEXER==============
@@ -114,6 +113,11 @@ Lexer::Lexer(std::string fcontent, struct LexerSettings settings)
 {
     this->fcontent = fcontent;
     this->settings = settings;
+}
+
+std::list<Token> Lexer::getTokens()
+{
+    return token_list.getTokens();
 }
 
 /*
@@ -141,23 +145,23 @@ void Lexer::lex()
 
         if (constants.is_keyword(word))
         {
-            tokenList.make_token(word, TokenType::keyword);
+            token_list.make_token(word, TokenType::keyword);
         }
         else if (constants.is_datatype(word))
         {
-            tokenList.make_token(word, TokenType::datatype);
+            token_list.make_token(word, TokenType::datatype);
         }
         else if (constants.is_endcommand(word))
         {
-            tokenList.make_token(word, TokenType::endcommand);
+            token_list.make_token(word, TokenType::endcommand);
         }
         else if (constants.is_literal(word))
         {
-            tokenList.make_token(word, TokenType::literal);
+            token_list.make_token(word, TokenType::literal);
         }
         else
         {
-            tokenList.make_token(word, TokenType::identifier);
+            token_list.make_token(word, TokenType::identifier);
         }
 
         std::advance(iterator, 1);
@@ -165,7 +169,7 @@ void Lexer::lex()
     }
 
     if (settings.debug_tokens)
-        tokenList.debug();
+        token_list.debug();
 }
 
 /*
