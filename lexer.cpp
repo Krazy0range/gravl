@@ -69,11 +69,6 @@ class TokenList
 {
     private:
         std::list<Token> tokens;
-        
-        void add_token(Token token)
-        {
-            tokens.push_back(token);
-        }
 
         std::string tokentype_to_string(TokenType type, bool debug)
         {
@@ -93,7 +88,7 @@ class TokenList
         void make_token(std::string word, TokenType type)
         {
             Token token(word, type);
-            add_token(token);
+            tokens.push_back(token);
         }
 
         void debug()
