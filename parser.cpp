@@ -6,7 +6,7 @@
     ==============PARSER==============
 */
 
-Parser::Parser(std::list<Token> tokens)
+Parser::Parser(std::vector<Token> tokens)
 {
     this->tokens = tokens;
 
@@ -28,15 +28,12 @@ void Parser::make_node(Token token, Node *parent)
 
 void Parser::parse()
 {
-    auto iterator = std::begin(tokens);
-    for (int i = 0; i < tokens.size(); i++)
+    for (auto i = tokens.begin(); i != tokens.end(); ++i)
     {
-        Token token = *iterator;
+        Token token = *i;
 
         // Just add all nodes to the main node for now
         make_node(token, main);
-
-        std::advance(iterator, 1);
     }
 }
 
@@ -49,15 +46,12 @@ void Parser::debug()
 
 void Parser::_debug(Node *node, int indent)
 {
-    auto iterator = std::begin(node->children);
-    for (int i = 0; i < node->children.size(); i++)
+    for (auto i = node->children.begin(); i != node->children.end(); ++i)
     {
-        Node *child = *iterator;
+        Node *child = *i;
 
         std::cout << std::string(indent, '\t') << "\t-\t" << child->token.getWord() << std::endl;
 
-        _debug(*iterator, indent+1);
-
-        std::advance(iterator, 1);
+        _debug(*i, indent+1);
     }
 }

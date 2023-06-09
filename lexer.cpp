@@ -92,15 +92,14 @@ void TokenList::debug()
 {
     std::cout << "TOKENS\n";
     std::cout << "\tTokens generated: " << tokens.size() << "\n";
-    auto iterator = tokens.begin();
-    for (int i = 0; i < tokens.size(); i++)
+
+    for (auto i = tokens.begin(); i != tokens.end(); ++i)
     {
-        std::cout << "\t-\t" << tokentype_to_string(iterator->getType(), true) << '\t' << iterator->getWord() << '\n';
-        std::advance(iterator, 1);
+        std::cout << "\t-\t" << tokentype_to_string(i->getType(), true) << '\t' << i->getWord() << '\n';
     }
 }
 
-std::list<Token> TokenList::getTokens()
+std::vector<Token> TokenList::getTokens()
 {
     return tokens;
 }
@@ -115,7 +114,7 @@ Lexer::Lexer(std::string fcontent, struct LexerSettings settings)
     this->settings = settings;
 }
 
-std::list<Token> Lexer::getTokens()
+std::vector<Token> Lexer::getTokens()
 {
     return token_list.getTokens();
 }
@@ -126,7 +125,7 @@ std::list<Token> Lexer::getTokens()
 
 void Lexer::lex()
 {
-    std::list<std::string> words = split(fcontent);
+    std::vector<std::string> words = split(fcontent);
 
     if (settings.debug_words) std::cout << "FILE WORDS\n";
 
@@ -134,14 +133,13 @@ void Lexer::lex()
     std::string lastword;
     
     // Loop through all the words
-    auto iterator = words.begin();
-    for (int i = 0; i < words.size()-1; i++)
+    for (auto i = words.begin(); i != words.end(); ++i)
     {
 
         if (settings.debug_words)
-            std::cout << "\t-\t" << *iterator << '\n';
+            std::cout << "\t-\t" << *i << '\n';
 
-        word = *iterator;
+        word = *i;
 
         if (constants.is_keyword(word))
         {
@@ -164,7 +162,6 @@ void Lexer::lex()
             token_list.make_token(word, TokenType::identifier);
         }
 
-        std::advance(iterator, 1);
         lastword = word;
     }
 
@@ -175,11 +172,11 @@ void Lexer::lex()
 /*
     Split the contents of the gravl file into words to be tokenized
 */
-std::list<std::string> Lexer::split(std::string text)
+std::vector<std::string> Lexer::split(std::string text)
 {
     char character;
     std::string word = "";
-    std::list<std::string> words;
+    std::vector<std::string> words;
     bool in_string = false;
 
     for (int i = 0; i < text.length(); i++)
@@ -212,8 +209,6 @@ std::list<std::string> Lexer::split(std::string text)
             }
         }
     }
-
-    words.push_back(word);
 
     return words;
 }

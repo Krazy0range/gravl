@@ -2,7 +2,7 @@
 #define lexer_h
 
 #include <string>
-#include <list>
+#include <vector>
 
 enum class TokenType
 {
@@ -28,13 +28,13 @@ class Token
 class TokenList
 {
     private:
-        std::list<Token> tokens;
+        std::vector<Token> tokens;
         std::string tokentype_to_string(TokenType type, bool debug);
 
     public:
         void make_token(std::string word, TokenType type);
         void debug();
-        std::list<Token> getTokens();
+        std::vector<Token> getTokens();
 };
 
 struct LexerSettings
@@ -49,12 +49,12 @@ class Lexer
         struct LexerSettings settings;
         std::string fcontent;
         TokenList token_list;
-        std::list<std::string> split(std::string text);
+        std::vector<std::string> split(std::string text);
     
     public:
         Lexer(std::string fcontent, struct LexerSettings settings);
         ~Lexer() = default;
-        std::list<Token> getTokens();
+        std::vector<Token> getTokens();
         void lex();
 };
 

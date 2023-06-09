@@ -6,7 +6,7 @@
 struct Node
 {
     Token token;
-    std::list<Node *> children;
+    std::vector<Node *> children;
 
     Node(Token t) : token(t) {};
 };
@@ -14,12 +14,12 @@ struct Node
 class Parser
 {
     private:
-        std::list<Token> tokens;
+        std::vector<Token> tokens;
         Node *main;
         void _debug(Node *node, int indent);
     
     public:
-        Parser(std::list<Token> tokens);
+        Parser(std::vector<Token> tokens);
         void make_node(Token token, Node *parent);
         void parse();
         void debug();
