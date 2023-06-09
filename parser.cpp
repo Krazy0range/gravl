@@ -19,6 +19,7 @@ Node *Parser::make_node(Token token, Node *parent)
 {
     Node *node = new Node(token); // Create a new node
     parent->children.push_back(node); // Add the node to its parent's children list
+
     return node;
 }
 
@@ -63,7 +64,7 @@ void Parser::parse()
 void Parser::debug()
 {
     std::cout << "NODE TREE\n";
-    std::cout << main->token.getWord() << std::endl;
+    std::cout << '\t' << main->token.getWord() << std::endl;
     _debug(main, 0);
 }
 
@@ -73,7 +74,8 @@ void Parser::_debug(Node *node, int indent)
     {
         Node *child = i;
 
-        std::cout << std::string(indent, '\t') << "\t-\t" << child->token.getWord() << std::endl;
+        std::cout << TokenList::tokentype_to_string(child->token.getType(), true) << std::string(indent, '\t'); // Display the node's token type and indentation
+        std::cout << "\t-\t" << child->token.getWord() << std::endl; // Dash and node token word
 
         _debug(i, indent+1);
     }

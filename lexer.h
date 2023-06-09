@@ -30,9 +30,9 @@ class TokenList
 {
     private:
         std::vector<Token> tokens;
-        std::string tokentype_to_string(TokenType type, bool debug);
 
     public:
+        static std::string tokentype_to_string(TokenType type, bool debug);
         void make_token(std::string word, TokenType type);
         void debug();
         std::vector<Token> getTokens();

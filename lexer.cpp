@@ -79,6 +79,7 @@ std::string TokenList::tokentype_to_string(TokenType type, bool debug)
         case TokenType::keyword:    return (debug ? "keyword " : "keyword");
         case TokenType::literal:    return (debug ? "literal " : "literal");
         case TokenType::endcommand: return "endcommand";
+        case TokenType::none:       return (debug ? "none    " : "none");
         default:                    return "invalid";
     }
 }
