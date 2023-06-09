@@ -10,11 +10,13 @@
 class Constants
 {
     private:
-        std::string KEYWORDS[1] = {
-            "var"
+        std::string KEYWORDS[2] = {
+            "var",
+            "let"
         };
-        std::string DATATYPES[3] = {
+        std::string DATATYPES[4] = {
             "int",
+            "float",
             "string",
             "bool"
         };
@@ -213,12 +215,13 @@ std::vector<std::string> Lexer::split(std::string text)
     std::string word = "";
     std::vector<std::string> words;
     bool in_string = false;
+    bool in_comment = false;
 
     for (int i = 0; i < text.length(); i++)
     {
         character = text[i];
 
-        if ((character == ' ' || character == '\n') && !in_string)
+        if ((character == ' ' || character == '\n') && !in_string && !in_comment)
         {
             if (word != "")
             {
@@ -226,7 +229,7 @@ std::vector<std::string> Lexer::split(std::string text)
                 word = "";
             }
         }
-        else if (character == ';')
+        else if (character == ';' && !in_comment)
         {
             words.push_back(word);
             word = "";
@@ -234,11 +237,19 @@ std::vector<std::string> Lexer::split(std::string text)
             words.push_back(word);
             word = "";
         }
+        else if (character == '\\')
+        {
+            in_comment = !in_comment;
+            if (!in_comment)
+            {
+                word = "";
+            }
+        }
         else
         {
             word.push_back(character);
 
-            if (character == '"')
+            if (character == '"' && !in_comment)
             {
                 in_string = !in_string;
             }
