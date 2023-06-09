@@ -93,9 +93,9 @@ void TokenList::debug()
     std::cout << "TOKENS\n";
     std::cout << "\tTokens generated: " << tokens.size() << "\n";
 
-    for (auto i = tokens.begin(); i != tokens.end(); ++i)
+    for (auto i : tokens)
     {
-        std::cout << "\t-\t" << tokentype_to_string(i->getType(), true) << '\t' << i->getWord() << '\n';
+        std::cout << "\t-\t" << tokentype_to_string(i.getType(), true) << '\t' << i.getWord() << '\n';
     }
 }
 
@@ -133,13 +133,13 @@ void Lexer::lex()
     std::string lastword;
     
     // Loop through all the words
-    for (auto i = words.begin(); i != words.end(); ++i)
+    for (auto i : words)
     {
 
         if (settings.debug_words)
-            std::cout << "\t-\t" << *i << '\n';
+            std::cout << "\t-\t" << i << '\n';
 
-        word = *i;
+        word = i;
 
         if (constants.is_keyword(word))
         {

@@ -46,12 +46,12 @@ void Parser::debug()
 
 void Parser::_debug(Node *node, int indent)
 {
-    for (auto i = node->children.begin(); i != node->children.end(); ++i)
+    for (auto i : node->children)
     {
-        Node *child = *i;
+        Node *child = i;
 
         std::cout << std::string(indent, '\t') << "\t-\t" << child->token.getWord() << std::endl;
 
-        _debug(*i, indent+1);
+        _debug(i, indent+1);
     }
 }
