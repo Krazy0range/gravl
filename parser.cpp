@@ -28,36 +28,65 @@ Node *Parser::make_node(Token token, Node *parent)
     PARSE!
 */
 
+void updepth(std::vector<Node *> *baseNodes, Node *node, int *depth)
+{
+    baseNodes->push_back(node);
+    *depth = baseNodes->size() - 1;
+};
+
+void downdepth(std::vector<Node *> *baseNodes, int *depth)
+{
+    if (*depth == 0) return;
+    baseNodes->pop_back();
+    (*depth)--;
+};
+
 void Parser::parse()
 {
-    Node *baseNode;
+    std::vector<Node *> baseNodes = {main};
+    int depth = 0;
     Node *node;
 
     for (auto i = tokens.begin(); i != tokens.end(); ++i)
     {
         Token token = *i;
+        Node *baseNode = baseNodes[depth];
 
-        if (token.getType() == TokenType::keyword)
+        if (token.getType() == TokenType::keyword) // KEYWORD
         {
-            baseNode = make_node(token, main);
+            node = make_node(token, baseNode);
+            updepth(&baseNodes, node, &depth);
         }
-        else if (token.getType() == TokenType::datatype)
+        else if (token.getType() == TokenType::datatype) // DATATYPE
         {
             node = make_node(token, baseNode);
         }
-        else if (token.getType() == TokenType::identifier)
+        else if (token.getType() == TokenType::identifier) // IDENTIFIER
         {
             node = make_node(token, baseNode);
-            if (baseNode == main)
-                baseNode = node;
+            // If identfier node is not part of another command, set it as basenode
+            if (baseNode->token.getType() == TokenType::none || 
+                baseNode->token.getType() == TokenType::openblock)
+            {
+                updepth(&baseNodes, node, &depth);
+            }
         }
-        else if (token.getType() == TokenType::literal)
+        else if (token.getType() == TokenType::literal) // LITERAL
         {
             node = make_node(token, baseNode);
         }
-        else if (token.getType() == TokenType::endcommand)
+        else if (token.getType() == TokenType::endcommand) // ENDCOMMAND
         {
-            baseNode = main;
+            downdepth(&baseNodes, &depth);
+        }
+        else if (token.getType() == TokenType::openblock) // OPENBLOCK
+        {
+            node = make_node(token, baseNode);
+            updepth(&baseNodes, node, &depth);
+        }
+        else if (token.getType() == TokenType::closeblock) // CLOSEBLOCK
+        {
+            downdepth(&baseNodes, &depth);
         }
     }
 

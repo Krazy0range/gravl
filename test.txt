@@ -1,12 +1,20 @@
-var int x;
+var int x;}
 var int y;
-var int z;
 
-\ this is a comment and will not be run! \
+\ code block! \
 
-x 3;
-y 2;
-z -10;
+{
+    var int a;
+    var int b;
 
-let msg "hello world!";
-let str "gravl is pog";
+    {
+        let bool on true;
+        let bool off false;
+    }
+
+    a 3;
+    b 5;
+}
+
+x 13;
+y 25;

@@ -20,7 +20,8 @@ class Constants
             "string",
             "bool"
         };
-        // std::string SYMBOLS[0] = {};
+        char OPENBLOCK = '{';
+        char CLOSEBLOCK = '}';
     
     public:
         bool is_keyword(std::string text)
@@ -37,13 +38,16 @@ class Constants
         }
         bool is_literal(std::string text)
         {
-            // handle negative and positive integers and strings
             return isdigit(text[0]) || text[0] == '-' || text[0] == '"';
         }
-        // bool is_symbol(std::string text)
-        // {
-        //     return std::find(std::begin(SYMBOLS), std::end(SYMBOLS), text) != std::end(SYMBOLS);
-        // }
+        bool is_openblock(std::string text)
+        {
+            return text[0] == OPENBLOCK;
+        }
+        bool is_closeblock(std::string text)
+        {
+            return text[0] == CLOSEBLOCK;
+        }
 };
 
 Constants constants;
@@ -83,6 +87,8 @@ std::string TokenList::tokentype_to_string(TokenType type, tokentype_to_string_d
             case TokenType::keyword:    return "keyword";
             case TokenType::literal:    return "literal";
             case TokenType::endcommand: return "endcommand";
+            case TokenType::openblock:  return "openblock";
+            case TokenType::closeblock: return "closeblock";
             case TokenType::none:       return "none";
             default:                    return "invalid";
         }
@@ -96,6 +102,8 @@ std::string TokenList::tokentype_to_string(TokenType type, tokentype_to_string_d
             case TokenType::keyword:    return "keyword   ";
             case TokenType::literal:    return "literal   ";
             case TokenType::endcommand: return "endcommand";
+            case TokenType::openblock:  return "openblock ";
+            case TokenType::closeblock: return "closeblock";
             case TokenType::none:       return "none      ";
             default:                    return "invalid   ";
         }
@@ -109,6 +117,8 @@ std::string TokenList::tokentype_to_string(TokenType type, tokentype_to_string_d
             case TokenType::keyword:    return "keyw";
             case TokenType::literal:    return "lite";
             case TokenType::endcommand: return "endc";
+            case TokenType::openblock:  return "bope";
+            case TokenType::closeblock: return "bclo";
             case TokenType::none:       return "none";
             default:                    return "invalid";
         }
@@ -193,6 +203,14 @@ void Lexer::lex()
         else if (constants.is_literal(word))
         {
             token_list.make_token(word, TokenType::literal);
+        }
+        else if (constants.is_openblock(word))
+        {
+            token_list.make_token(word, TokenType::openblock);
+        }
+        else if (constants.is_closeblock(word))
+        {
+            token_list.make_token(word, TokenType::closeblock);
         }
         else
         {

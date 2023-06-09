@@ -7,11 +7,15 @@
 enum class TokenType
 {
     keyword,
-    identifier,
     datatype,
+    identifier,
     literal,
     endcommand,
-    none,
+
+    openblock,
+    closeblock,
+
+    none
 };
 
 class Token
