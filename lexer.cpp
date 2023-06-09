@@ -70,17 +70,50 @@ Token::Token(std::string word, TokenType type)
     TOKENLIST
 */
 
-std::string TokenList::tokentype_to_string(TokenType type, bool debug)
+std::string TokenList::tokentype_to_string(TokenType type, tokentype_to_string_debug_type debug)
 {
-    switch (type)
+    if (debug==normal)
     {
-        case TokenType::datatype:   return "datatype";
-        case TokenType::identifier: return "identifier";
-        case TokenType::keyword:    return (debug ? "keyword " : "keyword");
-        case TokenType::literal:    return (debug ? "literal " : "literal");
-        case TokenType::endcommand: return "endcommand";
-        case TokenType::none:       return (debug ? "none    " : "none");
-        default:                    return "invalid";
+        switch (type)
+        {
+            case TokenType::datatype:   return "datatype";
+            case TokenType::identifier: return "identifier";
+            case TokenType::keyword:    return "keyword";
+            case TokenType::literal:    return "literal";
+            case TokenType::endcommand: return "endcommand";
+            case TokenType::none:       return "none";
+            default:                    return "invalid";
+        }
+    }
+    else if (debug==spaced)
+    {
+        switch (type)
+        {
+            case TokenType::datatype:   return "datatype  ";
+            case TokenType::identifier: return "identifier";
+            case TokenType::keyword:    return "keyword   ";
+            case TokenType::literal:    return "literal   ";
+            case TokenType::endcommand: return "endcommand";
+            case TokenType::none:       return "none      ";
+            default:                    return "invalid   ";
+        }
+    }
+    else if (debug==shorten)
+    {
+        switch (type)
+        {
+            case TokenType::datatype:   return "data";
+            case TokenType::identifier: return "iden";
+            case TokenType::keyword:    return "keyw";
+            case TokenType::literal:    return "lite";
+            case TokenType::endcommand: return "endc";
+            case TokenType::none:       return "none";
+            default:                    return "invalid";
+        }
+    }
+    else
+    {
+        return "invalid";
     }
 }
 
@@ -97,7 +130,7 @@ void TokenList::debug()
 
     for (auto i : tokens)
     {
-        std::cout << "\t-\t" << tokentype_to_string(i.getType(), true) << '\t' << i.getWord() << '\n';
+        std::cout << "\t-\t" << tokentype_to_string(i.getType(), spaced) << '\t' << i.getWord() << '\n';
     }
 }
 

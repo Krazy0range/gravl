@@ -26,13 +26,20 @@ class Token
         TokenType getType();
 };
 
+enum tokentype_to_string_debug_type
+{
+    normal,
+    spaced,
+    shorten
+};
+
 class TokenList
 {
     private:
         std::vector<Token> tokens;
 
     public:
-        static std::string tokentype_to_string(TokenType type, bool debug);
+        static std::string tokentype_to_string(TokenType type, tokentype_to_string_debug_type debug);
         void make_token(std::string word, TokenType type);
         void debug();
         std::vector<Token> getTokens();
@@ -53,7 +60,7 @@ class Lexer
         std::vector<std::string> split(std::string text);
     
     public:
-        Lexer(std::string fcontent, struct LexerSettings settings);
+        Lexer(std::string fcontent, LexerSettings settings);
         ~Lexer() = default;
         std::vector<Token> getTokens();
         void lex();

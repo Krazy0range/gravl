@@ -6,9 +6,10 @@
     ==============PARSER==============
 */
 
-Parser::Parser(std::vector<Token> tokens)
+Parser::Parser(std::vector<Token> tokens, ParserSettings settings)
 {
     this->tokens = tokens;
+    this->settings = settings;
 
     // Initialize the main node
     Token empty("main", TokenType::none);
@@ -59,6 +60,9 @@ void Parser::parse()
             baseNode = main;
         }
     }
+
+    if (settings.debug_node_tree)
+        debug();
 }
 
 void Parser::debug()
@@ -74,7 +78,7 @@ void Parser::_debug(Node *node, int indent)
     {
         Node *child = i;
 
-        std::cout << TokenList::tokentype_to_string(child->token.getType(), true) << std::string(indent, '\t'); // Display the node's token type and indentation
+        std::cout << TokenList::tokentype_to_string(child->token.getType(), shorten) << std::string(indent, '\t'); // Display the node's token type and indentation
         std::cout << "\t-\t" << child->token.getWord() << std::endl; // Dash and node token word
 
         _debug(i, indent+1);

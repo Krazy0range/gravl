@@ -46,15 +46,17 @@ int main(int argc, char *argv[])
 
     // Lexer
 
-    struct LexerSettings lexerSettings;
+    LexerSettings lexerSettings;
     lexerSettings.debug_words = false;
     lexerSettings.debug_tokens = true;
 
     Lexer lexer(fcontents, lexerSettings);
     lexer.lex();
 
-    Parser parser(lexer.getTokens());
+    auto lexerTokens = lexer.getTokens();
+    ParserSettings parserSettings;
+    parserSettings.debug_node_tree = true;
+    Parser parser(lexerTokens, parserSettings);
     parser.parse();
-    parser.debug();
 
 }
