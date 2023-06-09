@@ -11,15 +11,15 @@ Parser::Parser(std::vector<Token> tokens)
     this->tokens = tokens;
 
     // Initialize the main node
-    Token empty("main", TokenType::endcommand);
+    Token empty("main", TokenType::none);
     main = new Node(empty);
 }
 
-void Parser::make_node(Token token, Node *parent)
+Node *Parser::make_node(Token token, Node *parent)
 {
-    Node *node = new Node(token);
-
-    parent->children.push_back(node);
+    Node *node = new Node(token); // Create a new node
+    parent->children.push_back(node); // Add the node to its parent's children list
+    return node;
 }
 
 /*
@@ -28,12 +28,35 @@ void Parser::make_node(Token token, Node *parent)
 
 void Parser::parse()
 {
+    Node *baseNode;
+    Node *node;
+
     for (auto i = tokens.begin(); i != tokens.end(); ++i)
     {
         Token token = *i;
 
-        // Just add all nodes to the main node for now
-        make_node(token, main);
+        if (token.getType() == TokenType::keyword)
+        {
+            baseNode = make_node(token, main);
+        }
+        else if (token.getType() == TokenType::datatype)
+        {
+            node = make_node(token, baseNode);
+        }
+        else if (token.getType() == TokenType::identifier)
+        {
+            node = make_node(token, baseNode);
+            if (baseNode == main)
+                baseNode = node;
+        }
+        else if (token.getType() == TokenType::literal)
+        {
+            node = make_node(token, baseNode);
+        }
+        else if (token.getType() == TokenType::endcommand)
+        {
+            baseNode = main;
+        }
     }
 }
 

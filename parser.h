@@ -20,7 +20,7 @@ class Parser
     
     public:
         Parser(std::vector<Token> tokens);
-        void make_node(Token token, Node *parent);
+        Node *make_node(Token token, Node *parent);
         void parse();
         void debug();
 };

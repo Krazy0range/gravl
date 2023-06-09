@@ -11,6 +11,7 @@ enum class TokenType
     datatype,
     literal,
     endcommand,
+    none,
 };
 
 class Token
