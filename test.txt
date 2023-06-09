@@ -1,3 +1,18 @@
 var int x;
-x 13;
-var string y "Tali is poggers";
+var int y;
+var int z;
+
+x 3;
+y 2;
+z -10;
+
+var int a;
+var int b;
+var int c;
+
+a 13;
+b 5;
+
+c a;
+a b;
+b c;

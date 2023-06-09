@@ -35,7 +35,8 @@ class Constants
         }
         bool is_literal(std::string text)
         {
-            return isdigit(text[0]) || text[0] == '"';
+            // handle negative and positive integers and strings
+            return isdigit(text[0]) || text[0] == '-' || text[0] == '"';
         }
         // bool is_symbol(std::string text)
         // {
