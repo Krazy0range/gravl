@@ -194,11 +194,11 @@ void Lexer::lex()
 
         word = i;
 
-        // if (word == "\n")
-        // {
-        //     line++;
-        // }
-        if (constants.is_keyword(word))
+        if (word == "\n")
+        {
+            line++;
+        }
+        else if (constants.is_keyword(word))
         {
             token_list.make_token(word, TokenType::keyword, line);
         }
@@ -249,31 +249,26 @@ std::vector<std::string> Lexer::split(std::string text)
     {
         character = text[i];
 
-        if ((character == ' ' || character == '\n') && !in_string && !in_comment)
+        if ((character == ' ' || character == '\t') && !in_string && !in_comment) // Seperate words and don't include whitespace
         {
             if (word != "")
             {
                 words.push_back(word);
                 word = "";
-                
-                // We want to include line breaks for token info
-                // if (character == '\n')
-                // {
-                //     word.push_back(character);
-                //     words.push_back(word);
-                //     word = "";
-                // }
             }
         }
-        else if (character == ';' && !in_comment)
+        else if ((character == ';' || character == '\n') && !in_comment && !in_string) // Seperate words and include special characters
         {
-            words.push_back(word);
-            word = "";
+            if (word != "")
+            {
+                words.push_back(word);
+                word = "";
+            }
             word.push_back(character);
             words.push_back(word);
             word = "";
         }
-        else if (character == '\\')
+        else if (character == '\\') // Toggle commenting
         {
             in_comment = !in_comment;
             if (!in_comment)
@@ -283,9 +278,9 @@ std::vector<std::string> Lexer::split(std::string text)
         }
         else
         {
-            word.push_back(character);
+            word.push_back(character); // Add character to word
 
-            if (character == '"' && !in_comment)
+            if (character == '"' && !in_comment) // Toggle strings and include the quotation marks
             {
                 in_string = !in_string;
             }

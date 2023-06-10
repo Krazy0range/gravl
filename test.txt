@@ -1,4 +1,4 @@
-var int x;}
+var int x;
 var int y;
 
 {
@@ -14,5 +14,5 @@ var int y;
     b 5;
 }
 
-x 13;
+x 13;}
 y 25;

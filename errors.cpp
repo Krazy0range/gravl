@@ -14,7 +14,8 @@ void ErrorHandler::invokeError(ErrorType errorType, int line)
 {
     Error error = getError(errorType);
 
-    std::cout << "Line " << line << ":\n";
+    std::cout << "ERROR\n";
+    std::cout << "Line " << line + 1 << ": "; // Line indexing doesn't start at zero, even though it is stored this way
     std::cout << error.message;
     std::cout << getFline(line);
 }
