@@ -2,6 +2,7 @@
 #define parser_h
 
 #include "lexer.h"
+#include "errors.h"
 
 struct Node
 {
@@ -22,10 +23,11 @@ class Parser
         std::vector<Token> tokens;
         Node *main;
         ParserSettings settings;
+        ErrorHandler errorHandler;
         void _debug(Node *node, int indent);
     
     public:
-        Parser(std::vector<Token> tokens, ParserSettings settings);
+        Parser(std::vector<Token> tokens, ParserSettings settings, ErrorHandler errorHandler);
         Node *make_node(Token token, Node *parent);
         void parse();
         void debug();

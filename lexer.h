@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "errors.h"
+
 enum class TokenType
 {
     keyword,
@@ -23,11 +25,13 @@ class Token
     private:
         std::string word;
         TokenType type;
+        int line;
     
     public:
-        Token(std::string word, TokenType type);
+        Token(std::string word, TokenType type, int line);
         std::string getWord();
         TokenType getType();
+        int getLine();
 };
 
 enum tokentype_to_string_debug_type
@@ -44,7 +48,7 @@ class TokenList
 
     public:
         static std::string tokentype_to_string(TokenType type, tokentype_to_string_debug_type debug);
-        void make_token(std::string word, TokenType type);
+        void make_token(std::string word, TokenType type, int line);
         void debug();
         std::vector<Token> getTokens();
 };
@@ -61,10 +65,11 @@ class Lexer
         struct LexerSettings settings;
         std::string fcontent;
         TokenList token_list;
+        ErrorHandler errorHandler;
         std::vector<std::string> split(std::string text);
     
     public:
-        Lexer(std::string fcontent, LexerSettings settings);
+        Lexer(std::string fcontent, LexerSettings settings, ErrorHandler errorHandler);
         ~Lexer() = default;
         std::vector<Token> getTokens();
         void lex();

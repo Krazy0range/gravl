@@ -6,27 +6,62 @@
 
 #include "lexer.h"
 #include "parser.h"
+#include "errors.h"
 
-std::string fcontents;
+
+void doublecheck(int argc, char *argv[]);
+std::string readfile(char *argv[]);
 
 int main(int argc, char *argv[])
+{
+
+    // Double check command line inputs
+    doublecheck(argc, argv);
+    
+    // Open and read gravl file
+    std::string fcontents;
+    fcontents = readfile(argv);
+
+    // Error Handler
+
+    ErrorHandler errorHandler(fcontents);
+
+    // Lexer
+
+    LexerSettings lexerSettings;
+    lexerSettings.debug_words = true;
+    lexerSettings.debug_tokens = false;
+
+    Lexer lexer(fcontents, lexerSettings, errorHandler);
+    lexer.lex();
+
+    // Parser
+
+    auto lexerTokens = lexer.getTokens();
+    ParserSettings parserSettings;
+    parserSettings.debug_node_tree = false;
+    Parser parser(lexerTokens, parserSettings, errorHandler);
+    parser.parse();
+
+}
+
+void doublecheck(int argc, char *argv[])
 {
     // Double check command line arguments
     if (argc == 1)
     {
         std::cout << "Please include the name of the file to be split\n";
-        return 1;
+        exit(1);
     } 
     else if (argc > 2)
     {
         std::cout << "Please only include the name of the file to be split\n";
-        return 1;
+        exit(1);
     }
-    
-    /*
-        Open and read file into fcontents
-    */
+}
 
+std::string readfile(char *argv[])
+{
     std::fstream file;
     file.open(argv[1], std::ios::in);
 
@@ -34,29 +69,15 @@ int main(int argc, char *argv[])
     {
         std::ostringstream ss;
         ss << file.rdbuf() << "\n";
-        fcontents = ss.str();
+        return ss.str();
 
         file.close();
     }
     else
     {
         std::cout << "File not found";
-        return 2;
+        exit(2);
     }
 
-    // Lexer
-
-    LexerSettings lexerSettings;
-    lexerSettings.debug_words = false;
-    lexerSettings.debug_tokens = true;
-
-    Lexer lexer(fcontents, lexerSettings);
-    lexer.lex();
-
-    auto lexerTokens = lexer.getTokens();
-    ParserSettings parserSettings;
-    parserSettings.debug_node_tree = true;
-    Parser parser(lexerTokens, parserSettings);
-    parser.parse();
-
+    return "";
 }

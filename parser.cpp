@@ -1,18 +1,20 @@
 #include <iostream>
 
 #include "parser.h"
+#include "errors.h"
 
 /*
     ==============PARSER==============
 */
 
-Parser::Parser(std::vector<Token> tokens, ParserSettings settings)
+Parser::Parser(std::vector<Token> tokens, ParserSettings settings, ErrorHandler errorHandler)
 {
     this->tokens = tokens;
     this->settings = settings;
+    this->errorHandler = errorHandler;
 
     // Initialize the main node
-    Token empty("main", TokenType::none);
+    Token empty("main", TokenType::none, 0);
     main = new Node(empty);
 }
 
@@ -32,13 +34,6 @@ void updepth(std::vector<Node *> *baseNodes, Node *node, int *depth)
 {
     baseNodes->push_back(node);
     *depth = baseNodes->size() - 1;
-};
-
-void downdepth(std::vector<Node *> *baseNodes, int *depth)
-{
-    if (*depth == 0) return;
-    baseNodes->pop_back();
-    (*depth)--;
 };
 
 void Parser::parse()
@@ -75,18 +70,16 @@ void Parser::parse()
         {
             node = make_node(token, baseNode);
         }
-        else if (token.getType() == TokenType::endcommand) // ENDCOMMAND
-        {
-            downdepth(&baseNodes, &depth);
-        }
         else if (token.getType() == TokenType::openblock) // OPENBLOCK
         {
             node = make_node(token, baseNode);
             updepth(&baseNodes, node, &depth);
         }
-        else if (token.getType() == TokenType::closeblock) // CLOSEBLOCK
+        else if (token.getType() == TokenType::closeblock || token.getType() == TokenType::endcommand) // ENDCOMMAND AND CLOSEBLOCK
         {
-            downdepth(&baseNodes, &depth);
+            if (depth == 0) errorHandler.invokeError(ErrorType::closeblock, token.getLine());
+            baseNodes.pop_back();
+            depth--;
         }
     }
 

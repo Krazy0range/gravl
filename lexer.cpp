@@ -56,6 +56,13 @@ Constants constants;
     ==============TOKENS==============
 */
 
+Token::Token(std::string word, TokenType type, int line)
+{
+    this->word = word;
+    this->type = type;
+    this->line = line;
+}
+
 std::string Token::getWord()
 {
     return word;
@@ -66,10 +73,9 @@ TokenType Token::getType()
     return type;
 }
 
-Token::Token(std::string word, TokenType type)
+int Token::getLine()
 {
-    this->word = word;
-    this->type = type;
+    return line;
 }
 
 /*
@@ -129,9 +135,9 @@ std::string TokenList::tokentype_to_string(TokenType type, tokentype_to_string_d
     }
 }
 
-void TokenList::make_token(std::string word, TokenType type)
+void TokenList::make_token(std::string word, TokenType type, int line)
 {
-    Token token(word, type);
+    Token token(word, type, line);
     tokens.push_back(token);
 }
 
@@ -155,10 +161,11 @@ std::vector<Token> TokenList::getTokens()
     ==============LEXER==============
 */
 
-Lexer::Lexer(std::string fcontent, struct LexerSettings settings)
+Lexer::Lexer(std::string fcontent, struct LexerSettings settings, ErrorHandler errorHandler)
 {
     this->fcontent = fcontent;
     this->settings = settings;
+    this->errorHandler = errorHandler;
 }
 
 std::vector<Token> Lexer::getTokens()
@@ -173,48 +180,51 @@ std::vector<Token> Lexer::getTokens()
 void Lexer::lex()
 {
     std::vector<std::string> words = split(fcontent);
-
-    if (settings.debug_words) std::cout << "FILE WORDS\n";
-
     std::string word;
     std::string lastword;
+    int line = 0;
+
+    if (settings.debug_words) std::cout << "FILE WORDS\n";
     
     // Loop through all the words
     for (auto i : words)
     {
-
         if (settings.debug_words)
             std::cout << "\t-\t" << i << '\n';
 
         word = i;
 
+        // if (word == "\n")
+        // {
+        //     line++;
+        // }
         if (constants.is_keyword(word))
         {
-            token_list.make_token(word, TokenType::keyword);
+            token_list.make_token(word, TokenType::keyword, line);
         }
         else if (constants.is_datatype(word))
         {
-            token_list.make_token(word, TokenType::datatype);
+            token_list.make_token(word, TokenType::datatype, line);
         }
         else if (constants.is_endcommand(word))
         {
-            token_list.make_token(word, TokenType::endcommand);
+            token_list.make_token(word, TokenType::endcommand, line);
         }
         else if (constants.is_literal(word))
         {
-            token_list.make_token(word, TokenType::literal);
+            token_list.make_token(word, TokenType::literal, line);
         }
         else if (constants.is_openblock(word))
         {
-            token_list.make_token(word, TokenType::openblock);
+            token_list.make_token(word, TokenType::openblock, line);
         }
         else if (constants.is_closeblock(word))
         {
-            token_list.make_token(word, TokenType::closeblock);
+            token_list.make_token(word, TokenType::closeblock, line);
         }
         else
         {
-            token_list.make_token(word, TokenType::identifier);
+            token_list.make_token(word, TokenType::identifier, line);
         }
 
         lastword = word;
@@ -245,6 +255,14 @@ std::vector<std::string> Lexer::split(std::string text)
             {
                 words.push_back(word);
                 word = "";
+                
+                // We want to include line breaks for token info
+                // if (character == '\n')
+                // {
+                //     word.push_back(character);
+                //     words.push_back(word);
+                //     word = "";
+                // }
             }
         }
         else if (character == ';' && !in_comment)

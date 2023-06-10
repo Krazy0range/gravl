@@ -1,8 +1,6 @@
 var int x;}
 var int y;
 
-\ code block! \
-
 {
     var int a;
     var int b;
