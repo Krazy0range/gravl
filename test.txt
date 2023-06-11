@@ -1,18 +1,8 @@
-var int x;
-var int y;
+var bool x;
+var bool y;
 
+if (x or y)
 {
-    var int a;
-    var int b;
-
-    {
-        let bool on true;
-        let bool off false;
-    }
-
-    a 3;
-    b 5;
+    a x;
+    b y;
 }
-
-x 13;}
-y 25;

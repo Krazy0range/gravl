@@ -6,7 +6,7 @@
 
 enum class ErrorType
 {
-    closeblock
+    inadequateDepth
 };
 
 struct Error

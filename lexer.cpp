@@ -10,9 +10,22 @@
 class Constants
 {
     private:
-        std::string KEYWORDS[2] = {
+        char OPENBLOCK = '{';
+        char CLOSEBLOCK = '}';
+        char OPENPAREN = '(';
+        char CLOSEPAREN = ')';
+        char ENDCOMMAND = ';';
+        char SYMBOLS[5] = {
+            OPENBLOCK,
+            CLOSEBLOCK,
+            OPENPAREN,
+            CLOSEPAREN,
+            ENDCOMMAND
+        };
+        std::string KEYWORDS[3] = {
             "var",
-            "let"
+            "let",
+            "if"
         };
         std::string DATATYPES[4] = {
             "int",
@@ -20,8 +33,6 @@ class Constants
             "string",
             "bool"
         };
-        char OPENBLOCK = '{';
-        char CLOSEBLOCK = '}';
     
     public:
         bool is_keyword(std::string text)
@@ -34,7 +45,7 @@ class Constants
         }
         bool is_endcommand(std::string text)
         {
-            return text == ";";
+            return text[0] == ENDCOMMAND && text.length() == 1;
         }
         bool is_literal(std::string text)
         {
@@ -42,11 +53,23 @@ class Constants
         }
         bool is_openblock(std::string text)
         {
-            return text[0] == OPENBLOCK;
+            return text[0] == OPENBLOCK && text.length() == 1;
         }
         bool is_closeblock(std::string text)
         {
-            return text[0] == CLOSEBLOCK;
+            return text[0] == CLOSEBLOCK && text.length() == 1;
+        }
+        bool is_openparen(std::string text)
+        {
+            return text[0] == OPENPAREN && text.length() == 1;
+        }
+        bool is_closeparen(std::string text)
+        {
+            return text[0] == CLOSEPAREN && text.length() == 1;
+        }
+        bool is_symbol(char c)
+        {
+            return std::find(std::begin(SYMBOLS), std::end(SYMBOLS), c) != std::end(SYMBOLS);
         }
 };
 
@@ -95,6 +118,8 @@ std::string TokenList::tokentype_to_string(TokenType type, tokentype_to_string_d
             case TokenType::endcommand: return "endcommand";
             case TokenType::openblock:  return "openblock";
             case TokenType::closeblock: return "closeblock";
+            case TokenType::openparen:  return "openparen";
+            case TokenType::closeparen: return "closeparen";
             case TokenType::none:       return "none";
             default:                    return "invalid";
         }
@@ -110,6 +135,8 @@ std::string TokenList::tokentype_to_string(TokenType type, tokentype_to_string_d
             case TokenType::endcommand: return "endcommand";
             case TokenType::openblock:  return "openblock ";
             case TokenType::closeblock: return "closeblock";
+            case TokenType::openparen:  return "openparen ";
+            case TokenType::closeparen: return "closeparen";
             case TokenType::none:       return "none      ";
             default:                    return "invalid   ";
         }
@@ -125,6 +152,8 @@ std::string TokenList::tokentype_to_string(TokenType type, tokentype_to_string_d
             case TokenType::endcommand: return "endc";
             case TokenType::openblock:  return "bope";
             case TokenType::closeblock: return "bclo";
+            case TokenType::openparen:  return "pope";
+            case TokenType::closeparen: return "pclo";
             case TokenType::none:       return "none";
             default:                    return "invalid";
         }
@@ -222,6 +251,14 @@ void Lexer::lex()
         {
             token_list.make_token(word, TokenType::closeblock, line);
         }
+        else if (constants.is_openparen(word))
+        {
+            token_list.make_token(word, TokenType::openparen, line);
+        }
+        else if (constants.is_closeparen(word))
+        {
+            token_list.make_token(word, TokenType::closeparen, line);
+        }
         else
         {
             token_list.make_token(word, TokenType::identifier, line);
@@ -257,7 +294,7 @@ std::vector<std::string> Lexer::split(std::string text)
                 word = "";
             }
         }
-        else if ((character == ';' || character == '\n') && !in_comment && !in_string) // Seperate words and include special characters
+        else if ((character == '\n' || constants.is_symbol(character)) && !in_comment && !in_string) // Seperate words and include special characters
         {
             if (word != "")
             {

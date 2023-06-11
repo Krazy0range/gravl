@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     // Lexer
 
     LexerSettings lexerSettings;
-    lexerSettings.debug_words = true;
+    lexerSettings.debug_words = false;
     lexerSettings.debug_tokens = false;
 
     Lexer lexer(fcontents, lexerSettings, errorHandler);
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
     auto lexerTokens = lexer.getTokens();
     ParserSettings parserSettings;
-    parserSettings.debug_node_tree = false;
+    parserSettings.debug_node_tree = true;
     Parser parser(lexerTokens, parserSettings, errorHandler);
     parser.parse();
 

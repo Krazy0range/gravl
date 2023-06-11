@@ -70,14 +70,14 @@ void Parser::parse()
         {
             node = make_node(token, baseNode);
         }
-        else if (token.getType() == TokenType::openblock) // OPENBLOCK
+        else if (token.getType() == TokenType::openblock || token.getType() == TokenType::openparen) // OPENBLOCK, OPENPAREN
         {
             node = make_node(token, baseNode);
             updepth(&baseNodes, node, &depth);
         }
-        else if (token.getType() == TokenType::closeblock || token.getType() == TokenType::endcommand) // ENDCOMMAND AND CLOSEBLOCK
+        else if (token.getType() == TokenType::closeblock || token.getType() == TokenType::closeparen || token.getType() == TokenType::endcommand) // ENDCOMMAND AND CLOSEBLOCK
         {
-            if (depth == 0) errorHandler.invokeError(ErrorType::closeblock, token.getLine());
+            if (depth == 0) errorHandler.invokeError(ErrorType::inadequateDepth, token.getLine());
             baseNodes.pop_back();
             depth--;
         }

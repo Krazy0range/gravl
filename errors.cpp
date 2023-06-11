@@ -14,18 +14,18 @@ void ErrorHandler::invokeError(ErrorType errorType, int line)
 {
     Error error = getError(errorType);
 
-    std::cout << "ERROR\n";
-    std::cout << "Line " << line + 1 << ": "; // Line indexing doesn't start at zero, even though it is stored this way
+    std::cout << "ERROR on line " << line + 1 << "\n"; // Line indexing doesn't start at zero, even though it is stored this way
     std::cout << error.message;
     std::cout << getFline(line);
+    exit(error.exitcode);
 }
 
 Error ErrorHandler::getError(ErrorType errorType)
 {
     switch (errorType)
     {
-        case ErrorType::closeblock:
-            return Error { "Unpaired close block found.\n", 4 };
+        case ErrorType::inadequateDepth:
+            return Error { "Inadequate depth: unecessary closeblock or endcommand found.\n", 4 };
         default:
             return Error { "Invalid error", 3 };
     }

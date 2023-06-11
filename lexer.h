@@ -16,6 +16,8 @@ enum class TokenType
 
     openblock,
     closeblock,
+    openparen,
+    closeparen,
 
     none
 };
