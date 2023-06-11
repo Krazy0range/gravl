@@ -10,17 +10,18 @@
 class Constants
 {
     private:
+
         char OPENBLOCK = '{';
         char CLOSEBLOCK = '}';
         char OPENPAREN = '(';
         char CLOSEPAREN = ')';
         char ENDCOMMAND = ';';
-        char SYMBOLS[5] = {
-            OPENBLOCK,
-            CLOSEBLOCK,
-            OPENPAREN,
-            CLOSEPAREN,
-            ENDCOMMAND
+        std::string SYMBOLS[5] = {
+            "{",
+            "}",
+            "(",
+            ")",
+            ";"
         };
         std::string KEYWORDS[3] = {
             "var",
@@ -43,34 +44,24 @@ class Constants
         {
             return std::find(std::begin(DATATYPES), std::end(DATATYPES), text) != std::end(DATATYPES);
         }
-        bool is_endcommand(std::string text)
+        bool is_symbol(std::string text)
         {
-            return text[0] == ENDCOMMAND && text.length() == 1;
+            return std::find(std::begin(SYMBOLS), std::end(SYMBOLS), text) != std::end(SYMBOLS);
+        }
+        bool is_symbol(char c)
+        {
+            std::string text(1, c);
+            return std::find(std::begin(SYMBOLS), std::end(SYMBOLS), text) != std::end(SYMBOLS);
         }
         bool is_literal(std::string text)
         {
             return isdigit(text[0]) || text[0] == '-' || text[0] == '"';
         }
-        bool is_openblock(std::string text)
-        {
-            return text[0] == OPENBLOCK && text.length() == 1;
-        }
-        bool is_closeblock(std::string text)
-        {
-            return text[0] == CLOSEBLOCK && text.length() == 1;
-        }
-        bool is_openparen(std::string text)
-        {
-            return text[0] == OPENPAREN && text.length() == 1;
-        }
-        bool is_closeparen(std::string text)
-        {
-            return text[0] == CLOSEPAREN && text.length() == 1;
-        }
-        bool is_symbol(char c)
-        {
-            return std::find(std::begin(SYMBOLS), std::end(SYMBOLS), c) != std::end(SYMBOLS);
-        }
+        char get_endcommand() { return ENDCOMMAND; };
+        char get_openblock() { return OPENBLOCK; };
+        char get_closeblock() { return CLOSEBLOCK; };
+        char get_openparen() { return OPENPAREN; };
+        char get_closeparen() { return CLOSEPAREN; };
 };
 
 Constants constants;
@@ -105,62 +96,21 @@ int Token::getLine()
     TOKENLIST
 */
 
-std::string TokenList::tokentype_to_string(TokenType type, tokentype_to_string_debug_type debug)
+std::string TokenList::tokentype_to_string(TokenType type)
 {
-    if (debug==normal)
+    switch (type)
     {
-        switch (type)
-        {
-            case TokenType::datatype:   return "datatype";
-            case TokenType::identifier: return "identifier";
-            case TokenType::keyword:    return "keyword";
-            case TokenType::literal:    return "literal";
-            case TokenType::endcommand: return "endcommand";
-            case TokenType::openblock:  return "openblock";
-            case TokenType::closeblock: return "closeblock";
-            case TokenType::openparen:  return "openparen";
-            case TokenType::closeparen: return "closeparen";
-            case TokenType::none:       return "none";
-            default:                    return "invalid";
-        }
-    }
-    else if (debug==spaced)
-    {
-        switch (type)
-        {
-            case TokenType::datatype:   return "datatype  ";
-            case TokenType::identifier: return "identifier";
-            case TokenType::keyword:    return "keyword   ";
-            case TokenType::literal:    return "literal   ";
-            case TokenType::endcommand: return "endcommand";
-            case TokenType::openblock:  return "openblock ";
-            case TokenType::closeblock: return "closeblock";
-            case TokenType::openparen:  return "openparen ";
-            case TokenType::closeparen: return "closeparen";
-            case TokenType::none:       return "none      ";
-            default:                    return "invalid   ";
-        }
-    }
-    else if (debug==shorten)
-    {
-        switch (type)
-        {
-            case TokenType::datatype:   return "data";
-            case TokenType::identifier: return "iden";
-            case TokenType::keyword:    return "keyw";
-            case TokenType::literal:    return "lite";
-            case TokenType::endcommand: return "endc";
-            case TokenType::openblock:  return "bope";
-            case TokenType::closeblock: return "bclo";
-            case TokenType::openparen:  return "pope";
-            case TokenType::closeparen: return "pclo";
-            case TokenType::none:       return "none";
-            default:                    return "invalid";
-        }
-    }
-    else
-    {
-        return "invalid";
+        case TokenType::datatype:   return "data";
+        case TokenType::identifier: return "iden";
+        case TokenType::keyword:    return "keyw";
+        case TokenType::literal:    return "lite";
+        case TokenType::endcommand: return "endc";
+        case TokenType::openblock:  return "bope";
+        case TokenType::closeblock: return "bclo";
+        case TokenType::openparen:  return "pope";
+        case TokenType::closeparen: return "pclo";
+        case TokenType::none:       return "none";
+        default:                    return "invalid";
     }
 }
 
@@ -177,7 +127,7 @@ void TokenList::debug()
 
     for (auto i : tokens)
     {
-        std::cout << "\t-\t" << tokentype_to_string(i.getType(), spaced) << '\t' << i.getWord() << '\n';
+        std::cout << "\t-\t" << tokentype_to_string(i.getType()) << '\t' << i.getWord() << '\n';
     }
 }
 
@@ -235,29 +185,35 @@ void Lexer::lex()
         {
             token_list.make_token(word, TokenType::datatype, line);
         }
-        else if (constants.is_endcommand(word))
-        {
-            token_list.make_token(word, TokenType::endcommand, line);
-        }
         else if (constants.is_literal(word))
         {
             token_list.make_token(word, TokenType::literal, line);
         }
-        else if (constants.is_openblock(word))
+        else if (constants.is_symbol(word))
         {
-            token_list.make_token(word, TokenType::openblock, line);
-        }
-        else if (constants.is_closeblock(word))
-        {
-            token_list.make_token(word, TokenType::closeblock, line);
-        }
-        else if (constants.is_openparen(word))
-        {
-            token_list.make_token(word, TokenType::openparen, line);
-        }
-        else if (constants.is_closeparen(word))
-        {
-            token_list.make_token(word, TokenType::closeparen, line);
+            char c = word[0];
+            TokenType t;
+            if (c == constants.get_openblock())
+            {
+                t = TokenType::openblock;
+            }
+            else if (c == constants.get_closeblock())
+            {
+                t = TokenType::closeblock;
+            }
+            else if (c == constants.get_openparen())
+            {
+                t = TokenType::openparen;
+            }
+            else if (c == constants.get_closeparen())
+            {
+                t = TokenType::closeparen;
+            }
+            else if (c == constants.get_endcommand())
+            {
+                t = TokenType::endcommand;
+            }
+            token_list.make_token(word, t, line);
         }
         else
         {

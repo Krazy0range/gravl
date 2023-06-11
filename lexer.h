@@ -13,12 +13,10 @@ enum class TokenType
     identifier,
     literal,
     endcommand,
-
     openblock,
     closeblock,
     openparen,
     closeparen,
-
     none
 };
 
@@ -36,20 +34,13 @@ class Token
         int getLine();
 };
 
-enum tokentype_to_string_debug_type
-{
-    normal,
-    spaced,
-    shorten
-};
-
 class TokenList
 {
     private:
         std::vector<Token> tokens;
 
     public:
-        static std::string tokentype_to_string(TokenType type, tokentype_to_string_debug_type debug);
+        static std::string tokentype_to_string(TokenType type);
         void make_token(std::string word, TokenType type, int line);
         void debug();
         std::vector<Token> getTokens();

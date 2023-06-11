@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
     // Lexer
 
     LexerSettings lexerSettings;
-    lexerSettings.debug_words = false;
-    lexerSettings.debug_tokens = false;
+    lexerSettings.debug_words = true;
+    lexerSettings.debug_tokens = true;
 
     Lexer lexer(fcontents, lexerSettings, errorHandler);
     lexer.lex();
