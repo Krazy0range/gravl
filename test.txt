@@ -1,8 +1,7 @@
-var bool x;
-var bool y;
+let string list animals "goat" "sheep" "cow" "pig" "chicken" "buffalo";
+var int animalcount 0;
 
-if (x or y)
+for (var int i) (animals)
 {
-    a x;
-    b y;
+    inc animalcount;
 }

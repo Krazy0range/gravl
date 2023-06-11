@@ -23,16 +23,19 @@ class Constants
             ")",
             ";"
         };
-        std::string KEYWORDS[3] = {
+        std::string KEYWORDS[5] = {
             "var",
             "let",
-            "if"
+            "if",
+            "while",
+            "for"
         };
-        std::string DATATYPES[4] = {
+        std::string DATATYPES[5] = {
             "int",
             "float",
             "string",
-            "bool"
+            "bool",
+            "list"
         };
     
     public:

@@ -50,7 +50,11 @@ void Parser::parse()
         if (token.getType() == TokenType::keyword) // KEYWORD
         {
             node = make_node(token, baseNode);
-            updepth(&baseNodes, node, &depth);
+            if (baseNode->token.getType() == TokenType::none || 
+                baseNode->token.getType() == TokenType::openblock)
+            {
+                updepth(&baseNodes, node, &depth);
+            }
         }
         else if (token.getType() == TokenType::datatype) // DATATYPE
         {
