@@ -18,6 +18,7 @@ class ParserPatterns
     public:
         ParserPatterns();
         auto getPatterns() { return patterns; };
+        auto getPatternLists();
 };
 
 ParserPatterns::ParserPatterns()
@@ -25,6 +26,16 @@ ParserPatterns::ParserPatterns()
     patterns["variable_decl"] = {"keyword var let", "datatype", "identifier", "literal"};
     patterns["for_loop"] = {"keyword for", "statement", "statement", "code block"},
     patterns["code block"]  = {"all"};
+}
+
+auto ParserPatterns::getPatternLists()
+{
+    std::vector<std::vector<std::string>> patternLists;
+    for (auto & i : patterns)
+    {
+        patternLists.push_back(i.second);
+    }
+    return patternLists;
 }
 
 ParserPatterns parserPatterns;
@@ -64,7 +75,6 @@ void updepth(std::vector<Node *> *baseNodes, Node *node, int *depth)
 
 
 std::vector<std::string> split(std::string text);
-std::vector<std::string> slice(std::vector<std::string>& arr, int x, int y);
 
 void Parser::parse()
 {
@@ -72,124 +82,70 @@ void Parser::parse()
     // int depth = 0;
     // Node *node;
 
-    std::vector<std::vector<std::string>> availablePatterns; // A list of string lists
+    std::vector<std::vector<std::string>> patternLists = parserPatterns.getPatternLists();
+    std::vector<std::vector<std::string>> availablePatterns;
     std::vector<std::vector<std::string>> workingPatterns;
     int patternDepth = 0;
+    bool pattern_searching = false;
 
-    for (auto i = tokens.begin(); i != tokens.end(); ++i)
+    for (auto t = tokens.begin(); t != tokens.end(); ++t)
     {
-        Token token = *i;
+        Token token = *t;
         // Node *baseNode = baseNodes[depth];
 
         if (token.getType() == TokenType::endcommand)
         {
             availablePatterns.clear();
             patternDepth = 0;
+
+            continue; // Skip all this pattern stuff
         }
-        // Available patterns reset at the beginning of the program or the end of command
-        else if (availablePatterns.size() == 0)
+
+        if (availablePatterns.size() == 0)
         {
-            for (auto & p : parserPatterns.getPatterns())
-            {
-                // Get the second part of the dictionary item: PTTS
-                auto ptts = p.second;
-                // Parse the FIRST second part of the dictionary item: PTTSKEWY
-                auto pttskewy = split(ptts[0]);
-                // If the first item of PTTSKEWY matches the token
-                if (pttskewy[0] == TokenList::tokentype_true_string(token.getType()))
-                {
-                    // If there are params to be parsed
-                    if (pttskewy.size() > 1)
-                    {
-                        // Is token.getWord() one of the params? (Don't include first item)
-                        if (std::find(std::begin(pttskewy) + 1, std::end(pttskewy), token.getWord()) != std::end(pttskewy))
-                        {
-                            // If so, then it's a valid pattern! :D
-                            availablePatterns.push_back(ptts);
-                            std::cout << "DEBUG ACCEPTED PATTERN: " << p.first << std::endl;
-                            patternDepth++;
-                        }
-                    }
-                    else
-                    {
-                        // If no params, then the token matches the pattern!
-                        availablePatterns.push_back(ptts);
-                        patternDepth++;
-                    }
-                }
-            }
+            workingPatterns = patternLists;
+            pattern_searching = true;
         }
         else
         {
-            // In middle of a pattern, implement patternDepth
-            int i = 0; // Iterator for removing patterns
-            for (auto ptts : availablePatterns)
-            {
-                std::cout << "PATTERN TOKEN MATCHED: " << ptts[patternDepth] << std::endl;
-                auto pttskewy = split(ptts[patternDepth]); // Pretty much only change :/
-                if (pttskewy[0] == TokenList::tokentype_true_string(token.getType()))
-                {
-                    if (pttskewy.size() > 1)
-                    {
-                        if (std::find(std::begin(pttskewy) + 1, std::end(pttskewy), token.getWord()) != std::end(pttskewy))
-                        {
-                            // We keep this pattern!
-                        }
-                        else
-                        {
-                            // Remove this pattern
-                            availablePatterns.erase(std::begin(availablePatterns) + i);
-                        }
-                    }
-                }
-                else
-                {
-                    // We keep this pattern!
-                }
-
-                i++;
-                patternDepth++;
-            }
+            workingPatterns = availablePatterns;
+            pattern_searching = false;
         }
 
-        // if (token.getType() == TokenType::keyword) // KEYWORD
-        // {
-        //     node = make_node(token, baseNode);
-        //     if (baseNode->token.getType() == TokenType::none || 
-        //         baseNode->token.getType() == TokenType::openblock)
-        //     {
-        //         updepth(&baseNodes, node, &depth);
-        //     }
-        // }
-        // else if (token.getType() == TokenType::datatype) // DATATYPE
-        // {
-        //     node = make_node(token, baseNode);
-        // }
-        // else if (token.getType() == TokenType::identifier) // IDENTIFIER
-        // {
-        //     node = make_node(token, baseNode);
-        //     // If identfier node is not part of another command, set it as basenode
-        //     if (baseNode->token.getType() == TokenType::none || 
-        //         baseNode->token.getType() == TokenType::openblock)
-        //     {
-        //         updepth(&baseNodes, node, &depth);
-        //     }
-        // }
-        // else if (token.getType() == TokenType::literal) // LITERAL
-        // {
-        //     node = make_node(token, baseNode);
-        // }
-        // else if (token.getType() == TokenType::openblock || token.getType() == TokenType::openparen) // OPENBLOCK, OPENPAREN
-        // {
-        //     node = make_node(token, baseNode);
-        //     updepth(&baseNodes, node, &depth);
-        // }
-        // else if (token.getType() == TokenType::closeblock || token.getType() == TokenType::closeparen || token.getType() == TokenType::endcommand) // ENDCOMMAND AND CLOSEBLOCK
-        // {
-        //     if (depth == 0) errorHandler.invokeError(ErrorType::inadequateDepth, token.getLine());
-        //     baseNodes.pop_back();
-        //     depth--;
-        // }
+        int i = 0; // Iterator for removing patterns
+        for (auto & ptts : workingPatterns)
+        {
+            auto pttsitem = ptts[patternDepth]; // Get the item of the pattern matching our depth
+            auto pttskewy = split(pttsitem); // Split it (for when there are params) also random name don't ask
+            // If the first item of PTTSKEWY matches the token, AND it's just one param OR there are multiple params and the token matches
+            bool pttskewy0_matches_token = pttskewy[0] == TokenList::tokentype_true_string(token.getType());
+            bool just_one_param = pttskewy.size() == 1;
+            bool multiple_params = pttskewy.size() > 1;
+            bool token_matches_params = std::find(std::begin(pttskewy) + 1, std::end(pttskewy), token.getWord()) != std::end(pttskewy);
+            if ((pttskewy0_matches_token) && (just_one_param || (multiple_params && token_matches_params)))
+            {
+                std::cout << "PATTERN FOUND?\n";
+                // IT MATCHES THE PATTERN!
+                patternDepth++;
+                // If it is a new pattern, add to availablePatterns
+                if (pattern_searching)
+                {
+                    availablePatterns.push_back(ptts);
+                }
+            }
+            else
+            {
+                std::cout << "PATTERN NOT FOUND?\n";
+                // IT DOESN'T MATCH :(
+                // If not new-pattern-searching, then we need to remove this invalidated pattern
+                if (!pattern_searching)
+                {
+                    availablePatterns.erase(std::begin(availablePatterns) + i);
+                }
+            }
+
+            i++;
+        }
     }
 
     if (settings.debug_node_tree)
@@ -227,17 +183,4 @@ std::vector<std::string> split(std::string text)
         words.push_back(word);
     }
     return words;
-}
-
-// Get slice of vector
-std::vector<std::string> slice(std::vector<std::string>& arr, int x, int y)
-{
-    // Get start and end iterators
-    auto start = arr.begin() + x;
-    auto end = arr.begin() + y + 1;
-    // Stores the sliced vector
-    std::vector<std::string> result(start, end);
-    // Return result
-
-    return result;
 }
