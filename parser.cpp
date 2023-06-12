@@ -118,30 +118,26 @@ void Parser::parse()
             auto pttsitem = ptts[patternDepth]; // Get the item of the pattern matching our depth
             auto pttskewy = split(pttsitem); // Split it (for when there are params) also random name don't ask
             // If the first item of PTTSKEWY matches the token, AND it's just one param OR there are multiple params and the token matches
-            bool pttskewy0_matches_token = pttskewy[0] == TokenList::tokentype_true_string(token.getType());
+            std::string tokentype_string = TokenList::tokentype_true_string(token.getType());
+            bool pttskewy0_matches_token = pttskewy[0] == tokentype_string;
             bool just_one_param = pttskewy.size() == 1;
             bool multiple_params = pttskewy.size() > 1;
             bool token_matches_params = std::find(std::begin(pttskewy) + 1, std::end(pttskewy), token.getWord()) != std::end(pttskewy);
             if ((pttskewy0_matches_token) && (just_one_param || (multiple_params && token_matches_params)))
             {
-                std::cout << "PATTERN FOUND?\n";
+                std::cout << "PATTERN MATCHED with pttsitem: " << pttsitem << " and token " << tokentype_string << " " << token.getWord() << std::endl;
                 // IT MATCHES THE PATTERN!
                 patternDepth++;
                 // If it is a new pattern, add to availablePatterns
                 if (pattern_searching)
-                {
                     availablePatterns.push_back(ptts);
-                }
             }
             else
             {
-                std::cout << "PATTERN NOT FOUND?\n";
                 // IT DOESN'T MATCH :(
                 // If not new-pattern-searching, then we need to remove this invalidated pattern
                 if (!pattern_searching)
-                {
                     availablePatterns.erase(std::begin(availablePatterns) + i);
-                }
             }
 
             i++;
