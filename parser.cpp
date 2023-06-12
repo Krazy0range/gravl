@@ -125,7 +125,7 @@ void Parser::parse()
             bool token_matches_params = std::find(std::begin(pttskewy) + 1, std::end(pttskewy), token.getWord()) != std::end(pttskewy);
             if ((pttskewy0_matches_token) && (just_one_param || (multiple_params && token_matches_params)))
             {
-                std::cout << "PATTERN MATCHED with pttsitem: " << pttsitem << " and token " << tokentype_string << " " << token.getWord() << std::endl;
+                std::cout << "PATTERN MATCHED with pttsitem: " << pttsitem << "\t and token: " << tokentype_string << " " << token.getWord() << std::endl;
                 // IT MATCHES THE PATTERN!
                 patternDepth++;
                 // If it is a new pattern, add to availablePatterns
