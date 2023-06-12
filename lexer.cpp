@@ -99,7 +99,7 @@ int Token::getLine()
     TOKENLIST
 */
 
-std::string TokenList::tokentype_to_string(TokenType type)
+std::string TokenList::tokentype_debug_string(TokenType type)
 {
     switch (type)
     {
@@ -112,6 +112,24 @@ std::string TokenList::tokentype_to_string(TokenType type)
         case TokenType::closeblock: return "bclo";
         case TokenType::openparen:  return "pope";
         case TokenType::closeparen: return "pclo";
+        case TokenType::none:       return "none";
+        default:                    return "invalid";
+    }
+}
+
+std::string TokenList::tokentype_true_string(TokenType type)
+{
+    switch (type)
+    {
+        case TokenType::datatype:   return "datatype";
+        case TokenType::identifier: return "identifier";
+        case TokenType::keyword:    return "keyword";
+        case TokenType::literal:    return "literal";
+        case TokenType::endcommand: return "endcommand";
+        case TokenType::openblock:  return "openblock";
+        case TokenType::closeblock: return "closeblock";
+        case TokenType::openparen:  return "openparen";
+        case TokenType::closeparen: return "closeparen";
         case TokenType::none:       return "none";
         default:                    return "invalid";
     }
@@ -130,7 +148,7 @@ void TokenList::debug()
 
     for (auto i : tokens)
     {
-        std::cout << "\t-\t" << tokentype_to_string(i.getType()) << '\t' << i.getWord() << '\n';
+        std::cout << "\t-\t" << tokentype_debug_string(i.getType()) << '\t' << i.getWord() << '\n';
     }
 }
 

@@ -1,7 +1,3 @@
-let string list animals "goat" "sheep" "cow" "pig" "chicken" "buffalo";
-var int animalcount 0;
-
-for (var int i) (animals)
-{
-    inc animalcount;
-}
+var int x;
+var int y;
+var string msg "hi";

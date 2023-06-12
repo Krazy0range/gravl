@@ -40,7 +40,8 @@ class TokenList
         std::vector<Token> tokens;
 
     public:
-        static std::string tokentype_to_string(TokenType type);
+        static std::string tokentype_debug_string(TokenType type);
+        static std::string tokentype_true_string(TokenType type);
         void make_token(std::string word, TokenType type, int line);
         void debug();
         std::vector<Token> getTokens();
