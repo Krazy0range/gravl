@@ -24,8 +24,6 @@ class ParserPatterns
 ParserPatterns::ParserPatterns()
 {
     patterns["variable_decl"] = {"keyword var let", "datatype", "identifier", "literal"};
-    patterns["for_loop"] = {"keyword for", "statement", "statement", "code block"},
-    patterns["code block"]  = {"all"};
 }
 
 auto ParserPatterns::getPatternLists()
@@ -95,6 +93,8 @@ void Parser::parse()
 
         if (token.getType() == TokenType::endcommand)
         {
+            // If the command has ended, but we are still in the middle of a pattern
+
             availablePatterns.clear();
             patternDepth = 0;
 
@@ -125,12 +125,15 @@ void Parser::parse()
             bool token_matches_params = std::find(std::begin(pttskewy) + 1, std::end(pttskewy), token.getWord()) != std::end(pttskewy);
             if ((pttskewy0_matches_token) && (just_one_param || (multiple_params && token_matches_params)))
             {
-                std::cout << "PATTERN MATCHED with pttsitem: " << pttsitem << "\t and token: " << tokentype_string << " " << token.getWord() << std::endl;
+                std::cout << "PATTERN MATCHED:\n\tpttsitem: " << pttsitem << "\n\ttoken: " << tokentype_string << " " << token.getWord() << std::endl;
                 // IT MATCHES THE PATTERN!
                 patternDepth++;
                 // If it is a new pattern, add to availablePatterns
                 if (pattern_searching)
                     availablePatterns.push_back(ptts);
+                // If it is the end of a pattern, say so
+                if (patternDepth == ptts.size())
+                    std::cout << "PATTERN FINISHED\n";
             }
             else
             {
