@@ -45,7 +45,7 @@ class ParserPatterns
 
 ParserPatterns::ParserPatterns()
 {
-    patterns.push_back(Pattern {"variable declaration", {"keyword var let", "datatype", "identifier", "literal"}});
+    // patterns.push_back(Pattern {"variable declaration", {"keyword var let", "datatype", "identifier", "literal"}});
     patterns.push_back(Pattern {"undefined variable declaration", {"keyword var let", "datatype", "identifier"}});
 }
 
@@ -90,7 +90,7 @@ void Parser::parse()
     std::vector<Pattern> patternLists = parserPatterns.getPatterns();
     std::vector<Pattern> availablePatterns;
     std::vector<Pattern> & workingPatterns = patternLists;
-    Pattern & fufilledPattern = patternLists[0];
+    Pattern fufilledPattern = patternLists[0];
     bool pattern_searching = true;
 
     for (auto t = tokens.begin(); t != tokens.end(); ++t)
@@ -103,24 +103,29 @@ void Parser::parse()
             // If the command has ended, but we are still in the middle of a pattern
 
             availablePatterns.clear();
-
             std::cout << "FUFILLED PATTERN: " << fufilledPattern.getName() << std::endl;
+            pattern_searching = true; // Back to searching for patterns
 
             continue; // Skip all this pattern stuff
         }
 
-        if (availablePatterns.size() == 0)
+        if (pattern_searching)
         {
             workingPatterns = patternLists;
-            pattern_searching = true;
+            // pattern_searching = true;
         }
         else
         {
             workingPatterns = availablePatterns;
-            pattern_searching = false;
+            // pattern_searching = false;
         }
 
+        std::cout << "WORKING PATTERNS SIZE: " << workingPatterns.size() << std::endl;
+
         int i = 0; // Iterator for removing patterns
+        /*
+            Loop through all of the patterns and check if the tokens match
+        */
         for (auto & pattern : workingPatterns)
         {
             std::cout << pattern.depth << std::endl;
@@ -179,6 +184,16 @@ void Parser::parse()
 
             i++;
         }
+
+        // IF THERE ARE NO MATCHING PATTERNS
+
+        if (workingPatterns.size() == 0)
+        {
+            errorHandler.invokeError(ErrorType::noMatchingPatterns, token.getLine());
+        }
+
+        // Reset pattern_searching after one go-around
+        pattern_searching = false;
     }
 
     if (settings.debug_node_tree)

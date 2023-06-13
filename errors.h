@@ -6,7 +6,8 @@
 
 enum class ErrorType
 {
-    inadequateDepth
+    inadequateDepth,
+    noMatchingPatterns
 };
 
 struct Error

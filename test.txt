@@ -1,4 +1,4 @@
-var int x;
+var int x 5;
 \
 var int y;
 var string msg "hi";

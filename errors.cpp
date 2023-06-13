@@ -26,6 +26,8 @@ Error ErrorHandler::getError(ErrorType errorType)
     {
         case ErrorType::inadequateDepth:
             return Error { "Inadequate depth: unecessary closeblock or endcommand found.\n", 4 };
+        case ErrorType::noMatchingPatterns:
+            return Error { "No matching patterns: tokens did not match any syntax patterns.\n", 5 };
         default:
             return Error { "Invalid error", 3 };
     }
