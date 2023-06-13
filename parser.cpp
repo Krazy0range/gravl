@@ -19,8 +19,11 @@ class Pattern
     
     public:
         Pattern(std::string name, std::vector<std::string> reqs);
-        auto getReqs() { return reqs; };
-        auto getName() { return name; };
+        auto getReqs() { return reqs; }
+        auto getName() { return name; }
+        auto getDepth() { return depth; }
+        void incDepth() { depth++; }
+        int depth;
         void finish() { finished = true; }
 };
 
@@ -30,6 +33,7 @@ Pattern::Pattern(std::string name, std::vector<std::string> reqs)
     this->name = name;
     this->reqs = reqs;
     this->finished = false;
+    this->depth = 0;
 }
 
 class ParserPatterns
@@ -45,6 +49,7 @@ class ParserPatterns
 ParserPatterns::ParserPatterns()
 {
     patterns.push_back(Pattern {"variable declaration", {"keyword var let", "datatype", "identifier", "literal"}});
+    patterns.push_back(Pattern {"undefined variable declaration", {"keyword var let", "datatype", "identifier"}});
 }
 
 ParserPatterns parserPatterns;
@@ -87,9 +92,9 @@ void Parser::parse()
 
     std::vector<Pattern> patternLists = parserPatterns.getPatterns();
     std::vector<Pattern> availablePatterns;
-    std::vector<Pattern> workingPatterns;
+    std::vector<Pattern>& workingPatterns = patternLists;
     int patternDepth = 0;
-    bool pattern_searching = false;
+    bool pattern_searching = true;
 
     for (auto t = tokens.begin(); t != tokens.end(); ++t)
     {
@@ -120,10 +125,16 @@ void Parser::parse()
         int i = 0; // Iterator for removing patterns
         for (auto & pattern : workingPatterns)
         {
-            auto patternreq = pattern.getReqs()[patternDepth]; // Get the item of the pattern matching our depth
+            auto patternreq = pattern.getReqs()[pattern.getDepth()]; // Get the item of the pattern matching our depth
             auto patternparsed = split(patternreq); // Split it (for when there are params) also random name don't ask
             // If the first item of patternparsed matches the token, AND it's just one param OR there are multiple params and the token matches
             std::string tokentype_string = TokenList::tokentype_true_string(token.getType());
+
+            if (token.getWord() == "x")
+            {
+                std::cout << patternreq << std::endl;
+            }
+
             bool patternparsed0_matches_token = patternparsed[0] == tokentype_string;
             bool just_one_param = patternparsed.size() == 1;
             bool multiple_params = patternparsed.size() > 1;
@@ -131,15 +142,18 @@ void Parser::parse()
             if ((patternparsed0_matches_token) && (just_one_param || (multiple_params && token_matches_params)))
             {
                 // IT MATCHES THE PATTERN!
-                patternDepth++;
+                workingPatterns[i].incDepth();
+                // pattern.depth++;
                 // If it is a new pattern, add to availablePatterns
                 if (pattern_searching)
                 {
                     std::cout << "PATTERN STARTED: " << pattern.getName() << std::endl;
                     availablePatterns.push_back(pattern);
+                    // std::cout << "Pattern incremented depth?: " << availablePatterns[availablePatterns.size() - 1].getDepth() << std::endl;
                 }
                 // Debug afterword for style purposes
-                std::cout << "\tPATTERN REQ MATCHED:\n\t\tpatternreq: " << patternreq << "\n\t\ttoken: " << tokentype_string << " " << token.getWord() << std::endl;
+                std::cout << "\tPATTERN REQ MATCHED: " << pattern.getName() << '\n';
+                // std::cout << "\t\tpatternreq: " << patternreq << "\n\t\ttoken: " << tokentype_string << " " << token.getWord() << std::endl;
                 // If it is the end of a pattern, say so
                 if (patternDepth == pattern.getReqs().size())
                 {
@@ -155,6 +169,10 @@ void Parser::parse()
                 {
                     std::cout << "PATTERN REMOVED: " << pattern.getName() << std::endl;
                     availablePatterns.erase(std::begin(availablePatterns) + i);
+                }
+                else
+                {
+                    std::cout << "PATTERN DENIED: " << pattern.getName() << std::endl;
                 }
             }
 

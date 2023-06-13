@@ -1,3 +1,5 @@
 var int x;
+\
 var int y;
 var string msg "hi";
+\
