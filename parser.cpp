@@ -20,6 +20,8 @@ class Pattern
     public:
         Pattern(std::string name, std::vector<std::string> reqs);
         auto getReqs() { return reqs; };
+        auto getName() { return name; };
+        void finish() { finished = true; }
 };
 
 
@@ -74,13 +76,7 @@ Node *Parser::make_node(Token token, Node *parent)
     PARSE!
 */
 
-void updepth(std::vector<Node *> *baseNodes, Node *node, int *depth)
-{
-    baseNodes->push_back(node);
-    *depth = baseNodes->size() - 1;
-};
-
-
+// Function definition below
 std::vector<std::string> split(std::string text);
 
 void Parser::parse()
@@ -122,34 +118,44 @@ void Parser::parse()
         }
 
         int i = 0; // Iterator for removing patterns
-        for (auto & ptts : workingPatterns)
+        for (auto & pattern : workingPatterns)
         {
-            auto pttsitem = ptts.getReqs()[patternDepth]; // Get the item of the pattern matching our depth
-            auto pttskewy = split(pttsitem); // Split it (for when there are params) also random name don't ask
-            // If the first item of PTTSKEWY matches the token, AND it's just one param OR there are multiple params and the token matches
+            auto patternreq = pattern.getReqs()[patternDepth]; // Get the item of the pattern matching our depth
+            auto patternparsed = split(patternreq); // Split it (for when there are params) also random name don't ask
+            // If the first item of patternparsed matches the token, AND it's just one param OR there are multiple params and the token matches
             std::string tokentype_string = TokenList::tokentype_true_string(token.getType());
-            bool pttskewy0_matches_token = pttskewy[0] == tokentype_string;
-            bool just_one_param = pttskewy.size() == 1;
-            bool multiple_params = pttskewy.size() > 1;
-            bool token_matches_params = std::find(std::begin(pttskewy) + 1, std::end(pttskewy), token.getWord()) != std::end(pttskewy);
-            if ((pttskewy0_matches_token) && (just_one_param || (multiple_params && token_matches_params)))
+            bool patternparsed0_matches_token = patternparsed[0] == tokentype_string;
+            bool just_one_param = patternparsed.size() == 1;
+            bool multiple_params = patternparsed.size() > 1;
+            bool token_matches_params = std::find(std::begin(patternparsed) + 1, std::end(patternparsed), token.getWord()) != std::end(patternparsed);
+            if ((patternparsed0_matches_token) && (just_one_param || (multiple_params && token_matches_params)))
             {
-                std::cout << "PATTERN MATCHED:\n\tpttsitem: " << pttsitem << "\n\ttoken: " << tokentype_string << " " << token.getWord() << std::endl;
                 // IT MATCHES THE PATTERN!
                 patternDepth++;
                 // If it is a new pattern, add to availablePatterns
                 if (pattern_searching)
-                    availablePatterns.push_back(ptts);
+                {
+                    std::cout << "PATTERN STARTED: " << pattern.getName() << std::endl;
+                    availablePatterns.push_back(pattern);
+                }
+                // Debug afterword for style purposes
+                std::cout << "\tPATTERN REQ MATCHED:\n\t\tpatternreq: " << patternreq << "\n\t\ttoken: " << tokentype_string << " " << token.getWord() << std::endl;
                 // If it is the end of a pattern, say so
-                if (patternDepth == ptts.getReqs().size())
-                    std::cout << "PATTERN FINISHED\n";
+                if (patternDepth == pattern.getReqs().size())
+                {
+                    std::cout << "\tPATTERN FINISHED: " << pattern.getName() << std::endl;
+                    pattern.finish();
+                }
             }
             else
             {
                 // IT DOESN'T MATCH :(
                 // If not new-pattern-searching, then we need to remove this invalidated pattern
                 if (!pattern_searching)
+                {
+                    std::cout << "PATTERN REMOVED: " << pattern.getName() << std::endl;
                     availablePatterns.erase(std::begin(availablePatterns) + i);
+                }
             }
 
             i++;
