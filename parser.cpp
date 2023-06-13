@@ -15,7 +15,6 @@ class Pattern
     private:
         std::string name;
         std::vector<std::string> reqs;
-        bool finished;
     
     public:
         Pattern(std::string name, std::vector<std::string> reqs);
@@ -24,7 +23,6 @@ class Pattern
         auto getDepth() { return depth; }
         void incDepth() { depth++; }
         int depth;
-        void finish() { finished = true; }
 };
 
 
@@ -32,7 +30,6 @@ Pattern::Pattern(std::string name, std::vector<std::string> reqs)
 {
     this->name = name;
     this->reqs = reqs;
-    this->finished = false;
     this->depth = 0;
 }
 
@@ -92,8 +89,8 @@ void Parser::parse()
 
     std::vector<Pattern> patternLists = parserPatterns.getPatterns();
     std::vector<Pattern> availablePatterns;
-    std::vector<Pattern>& workingPatterns = patternLists;
-    int patternDepth = 0;
+    std::vector<Pattern> & workingPatterns = patternLists;
+    Pattern & fufilledPattern = patternLists[0];
     bool pattern_searching = true;
 
     for (auto t = tokens.begin(); t != tokens.end(); ++t)
@@ -106,7 +103,8 @@ void Parser::parse()
             // If the command has ended, but we are still in the middle of a pattern
 
             availablePatterns.clear();
-            patternDepth = 0;
+
+            std::cout << "FUFILLED PATTERN: " << fufilledPattern.getName() << std::endl;
 
             continue; // Skip all this pattern stuff
         }
@@ -125,15 +123,12 @@ void Parser::parse()
         int i = 0; // Iterator for removing patterns
         for (auto & pattern : workingPatterns)
         {
+            std::cout << pattern.depth << std::endl;
+
             auto patternreq = pattern.getReqs()[pattern.getDepth()]; // Get the item of the pattern matching our depth
             auto patternparsed = split(patternreq); // Split it (for when there are params) also random name don't ask
             // If the first item of patternparsed matches the token, AND it's just one param OR there are multiple params and the token matches
             std::string tokentype_string = TokenList::tokentype_true_string(token.getType());
-
-            if (token.getWord() == "x")
-            {
-                std::cout << patternreq << std::endl;
-            }
 
             bool patternparsed0_matches_token = patternparsed[0] == tokentype_string;
             bool just_one_param = patternparsed.size() == 1;
@@ -142,7 +137,10 @@ void Parser::parse()
             if ((patternparsed0_matches_token) && (just_one_param || (multiple_params && token_matches_params)))
             {
                 // IT MATCHES THE PATTERN!
-                workingPatterns[i].incDepth();
+                if (pattern_searching)
+                    pattern.incDepth();
+                else
+                    availablePatterns[i].incDepth();
                 // pattern.depth++;
                 // If it is a new pattern, add to availablePatterns
                 if (pattern_searching)
@@ -155,10 +153,13 @@ void Parser::parse()
                 std::cout << "\tPATTERN REQ MATCHED: " << pattern.getName() << '\n';
                 // std::cout << "\t\tpatternreq: " << patternreq << "\n\t\ttoken: " << tokentype_string << " " << token.getWord() << std::endl;
                 // If it is the end of a pattern, say so
-                if (patternDepth == pattern.getReqs().size())
+                if (pattern.getDepth() == pattern.getReqs().size()-1)
                 {
                     std::cout << "\tPATTERN FINISHED: " << pattern.getName() << std::endl;
-                    pattern.finish();
+                    pattern.depth = 0; // Reset depth
+                    availablePatterns.erase(std::begin(availablePatterns) + i); // Remove the pattern now that it has been finished
+                    // Potentially the fufilledPattern!
+                    fufilledPattern = pattern;
                 }
             }
             else
