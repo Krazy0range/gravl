@@ -48,8 +48,8 @@ class ParserPatterns
 
 ParserPatterns::ParserPatterns()
 {
-    // patterns.push_back(Pattern {"variable declaration", {"keyword var let", "datatype", "identifier", "literal"}});
     patterns.push_back(Pattern {"undefined variable declaration", {"keyword var let", "datatype", "identifier"}});
+    patterns.push_back(Pattern {"variable declaration", {"keyword var let", "datatype", "identifier", "literal"}});
 }
 
 ParserPatterns parserPatterns;
@@ -142,8 +142,19 @@ void Parser::parse()
         */
         for (auto & pattern : workingPatterns)
         {
+            // TODO: THIS IS CAUSING THE BAD ALLOCATION
+            if (pattern.getFinished()) // TODO <<<<<<<<<
+            {
+                // If the pattern has been finished, but there are still tokens lying around,
+                // then we need to invalidate it
 
-            auto patternreq = pattern.getReqs()[pattern.getDepth()]; // Get the item of the pattern matching our depth
+                // availablePatterns.erase(std::begin(availablePatterns) + i); // Remove the pattern now that it has been finished
+                std::cout << "PATTERN INVALIDATED???????????\n";
+
+                continue;
+            }
+
+            auto patternreq = pattern.getReqs()[pattern.getDepth()]; // Get the item of the pattern matching its depth
             auto patternparsed = split(patternreq); // Split it (for when there are params) also random name don't ask
             // If the first item of patternparsed matches the token, AND it's just one param OR there are multiple params and the token matches
             std::string tokentype_string = TokenList::tokentype_true_string(token.getType());
@@ -179,13 +190,15 @@ void Parser::parse()
                 {
                     pattern.depth = 0; // Reset depth // TODO: determine if necessary
                     pattern.finish();
-                    availablePatterns.erase(std::begin(availablePatterns) + i); // Remove the pattern now that it has been finished
+                    // TODO: What if we don't remove it?
+                    // TODO: We need to protect against OB indexing, and if it's OB, then don't do anything with it because it has been finished and awaiting full validation
                     // Potentially the fufilledPattern!
                     fufilledPattern = pattern;
 
                     if (settings.debug_patterns)
                         std::cout << "\tPATTERN FINISHED: " << pattern.getName() << std::endl;
                 }
+                std::cout << "survived?\n";
             }
             else
             {
