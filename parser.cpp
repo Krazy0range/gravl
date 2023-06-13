@@ -15,6 +15,7 @@ class Pattern
     private:
         std::string name;
         std::vector<std::string> reqs;
+        bool finished = false;
     
     public:
         Pattern(std::string name, std::vector<std::string> reqs);
@@ -22,6 +23,8 @@ class Pattern
         auto getName() { return name; }
         auto getDepth() { return depth; }
         void incDepth() { depth++; }
+        auto getFinished() { return finished; }
+        void finish() { finished = true; }
         int depth;
 };
 
@@ -93,18 +96,31 @@ void Parser::parse()
     Pattern fufilledPattern = patternLists[0];
     bool pattern_searching = true;
 
+    std::cout << settings.debug_patterns << std::endl;
+
     for (auto t = tokens.begin(); t != tokens.end(); ++t)
     {
+
         Token token = *t;
         // Node *baseNode = baseNodes[depth];
 
         if (token.getType() == TokenType::endcommand)
         {
+            // fufilledPattern represents the final matched pattern ( or the closest one )
             // If the command has ended, but we are still in the middle of a pattern
-
-            availablePatterns.clear();
-            std::cout << "FUFILLED PATTERN: " << fufilledPattern.getName() << std::endl;
-            pattern_searching = true; // Back to searching for patterns
+            if (fufilledPattern.getFinished())
+            {
+                availablePatterns.clear(); // Clear out for next round
+                pattern_searching = true; // Back to searching for patterns
+                
+                if (settings.debug_patterns)
+                    std::cout << "FUFILLED PATTERN: " << fufilledPattern.getName() << std::endl;
+            }
+            else
+            {
+                // Pattern not completed before finish?
+                errorHandler.invokeError(ErrorType::noMatchingPatterns, token.getLine());
+            }
 
             continue; // Skip all this pattern stuff
         }
@@ -120,15 +136,12 @@ void Parser::parse()
             // pattern_searching = false;
         }
 
-        std::cout << "WORKING PATTERNS SIZE: " << workingPatterns.size() << std::endl;
-
         int i = 0; // Iterator for removing patterns
         /*
             Loop through all of the patterns and check if the tokens match
         */
         for (auto & pattern : workingPatterns)
         {
-            std::cout << pattern.depth << std::endl;
 
             auto patternreq = pattern.getReqs()[pattern.getDepth()]; // Get the item of the pattern matching our depth
             auto patternparsed = split(patternreq); // Split it (for when there are params) also random name don't ask
@@ -150,21 +163,28 @@ void Parser::parse()
                 // If it is a new pattern, add to availablePatterns
                 if (pattern_searching)
                 {
-                    std::cout << "PATTERN STARTED: " << pattern.getName() << std::endl;
                     availablePatterns.push_back(pattern);
+
+                    if (settings.debug_patterns)
+                        std::cout << "PATTERN STARTED: " << pattern.getName() << std::endl;
                     // std::cout << "Pattern incremented depth?: " << availablePatterns[availablePatterns.size() - 1].getDepth() << std::endl;
                 }
-                // Debug afterword for style purposes
-                std::cout << "\tPATTERN REQ MATCHED: " << pattern.getName() << '\n';
-                // std::cout << "\t\tpatternreq: " << patternreq << "\n\t\ttoken: " << tokentype_string << " " << token.getWord() << std::endl;
-                // If it is the end of a pattern, say so
+
+                // Debug after pattern start for style purposes
+                if (settings.debug_patterns)
+                    std::cout << "\tPATTERN REQ MATCHED: " << pattern.getName() << '\n';
+
+                // If it is the end of a pattern, then we're FINISHED!
                 if (pattern.getDepth() == pattern.getReqs().size()-1)
                 {
-                    std::cout << "\tPATTERN FINISHED: " << pattern.getName() << std::endl;
-                    pattern.depth = 0; // Reset depth
+                    pattern.depth = 0; // Reset depth // TODO: determine if necessary
+                    pattern.finish();
                     availablePatterns.erase(std::begin(availablePatterns) + i); // Remove the pattern now that it has been finished
                     // Potentially the fufilledPattern!
                     fufilledPattern = pattern;
+
+                    if (settings.debug_patterns)
+                        std::cout << "\tPATTERN FINISHED: " << pattern.getName() << std::endl;
                 }
             }
             else
@@ -173,12 +193,16 @@ void Parser::parse()
                 // If not new-pattern-searching, then we need to remove this invalidated pattern
                 if (!pattern_searching)
                 {
-                    std::cout << "PATTERN REMOVED: " << pattern.getName() << std::endl;
                     availablePatterns.erase(std::begin(availablePatterns) + i);
+
+                    if (settings.debug_patterns)
+                        std::cout << "PATTERN REMOVED: " << pattern.getName() << std::endl;
                 }
                 else
                 {
-                    std::cout << "PATTERN DENIED: " << pattern.getName() << std::endl;
+                    // Pattern denied in pattern_searching process
+                    if (settings.debug_patterns)
+                        std::cout << "PATTERN DENIED: " << pattern.getName() << std::endl;
                 }
             }
 

@@ -15,6 +15,7 @@ struct Node
 struct ParserSettings
 {
     bool debug_node_tree;
+    bool debug_patterns;
 };
 
 class Parser
