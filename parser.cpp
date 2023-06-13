@@ -10,30 +10,39 @@
     PARSER PATTERNS
 */
 
+class Pattern
+{
+    private:
+        std::string name;
+        std::vector<std::string> reqs;
+        bool finished;
+    
+    public:
+        Pattern(std::string name, std::vector<std::string> reqs);
+        auto getReqs() { return reqs; };
+};
+
+
+Pattern::Pattern(std::string name, std::vector<std::string> reqs)
+{
+    this->name = name;
+    this->reqs = reqs;
+    this->finished = false;
+}
+
 class ParserPatterns
 {
     private:
-        std::map<std::string, std::vector<std::string>> patterns;
+        std::vector<Pattern> patterns;
 
     public:
         ParserPatterns();
         auto getPatterns() { return patterns; };
-        auto getPatternLists();
 };
 
 ParserPatterns::ParserPatterns()
 {
-    patterns["variable_decl"] = {"keyword var let", "datatype", "identifier", "literal"};
-}
-
-auto ParserPatterns::getPatternLists()
-{
-    std::vector<std::vector<std::string>> patternLists;
-    for (auto & i : patterns)
-    {
-        patternLists.push_back(i.second);
-    }
-    return patternLists;
+    patterns.push_back(Pattern {"variable declaration", {"keyword var let", "datatype", "identifier", "literal"}});
 }
 
 ParserPatterns parserPatterns;
@@ -80,9 +89,9 @@ void Parser::parse()
     // int depth = 0;
     // Node *node;
 
-    std::vector<std::vector<std::string>> patternLists = parserPatterns.getPatternLists();
-    std::vector<std::vector<std::string>> availablePatterns;
-    std::vector<std::vector<std::string>> workingPatterns;
+    std::vector<Pattern> patternLists = parserPatterns.getPatterns();
+    std::vector<Pattern> availablePatterns;
+    std::vector<Pattern> workingPatterns;
     int patternDepth = 0;
     bool pattern_searching = false;
 
@@ -115,7 +124,7 @@ void Parser::parse()
         int i = 0; // Iterator for removing patterns
         for (auto & ptts : workingPatterns)
         {
-            auto pttsitem = ptts[patternDepth]; // Get the item of the pattern matching our depth
+            auto pttsitem = ptts.getReqs()[patternDepth]; // Get the item of the pattern matching our depth
             auto pttskewy = split(pttsitem); // Split it (for when there are params) also random name don't ask
             // If the first item of PTTSKEWY matches the token, AND it's just one param OR there are multiple params and the token matches
             std::string tokentype_string = TokenList::tokentype_true_string(token.getType());
@@ -132,7 +141,7 @@ void Parser::parse()
                 if (pattern_searching)
                     availablePatterns.push_back(ptts);
                 // If it is the end of a pattern, say so
-                if (patternDepth == ptts.size())
+                if (patternDepth == ptts.getReqs().size())
                     std::cout << "PATTERN FINISHED\n";
             }
             else
