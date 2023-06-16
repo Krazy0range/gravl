@@ -6,3 +6,7 @@
 /brainstorm.txt
 # ignore .vscode
 .vscode/
+# ignore replit stuff
+.ccls-cache/
+/.replit
+/replit.nix
