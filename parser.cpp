@@ -96,7 +96,6 @@ void Parser::parse()
     std::vector<Pattern> patternLists = parserPatterns.getPatterns();
     std::vector<Pattern> workingPatterns;
     std::vector<Pattern> workingWorking;
-    Pattern *fufilledPattern = NULL;
     bool pattern_searching = true;
 
     int token_iter = 0;
@@ -109,23 +108,30 @@ void Parser::parse()
 
         if (token.getType() == TokenType::endcommand)
         {
-            // fufilledPattern represents the final matched pattern ( or the closest one )
-            // If the command has ended, but we are still in the middle of a pattern
-            if (fufilledPattern && fufilledPattern->getFinished())
-            {
-                workingPatterns.clear(); // Clear out for next round
-                pattern_searching = true; // Back to searching for pattern
+            bool finishedPatternFound = false;
 
-                if (settings.debug_patterns)
-                    std::cout << "FUFILLED PATTERN: " << fufilledPattern->getName() << std::endl;
-            }
-            else
+            // Loop through the remain patterns and select the first finished one
+            for (auto & pattern : workingPatterns)
             {
-                // Pattern not completed before finish?
+                if (pattern.getFinished())
+                {
+                    // TODO BUILD NODE TREE STUFF
+
+                    if (settings.debug_patterns)
+                        std::cout << "\x1b[41mFUFILLED PATTERN: " << pattern.getName() << "\x1b[0m" << std::endl;
+                    
+                    finishedPatternFound = true;
+                    workingPatterns.clear();
+                    pattern_searching = true;
+                    break;
+                }
+            }
+
+            // Pattern not completed before finish?
+            if (!finishedPatternFound)
                 errorHandler.invokeError(ErrorType::noMatchingPatterns, token.getLine());
-            }
 
-            continue; // Skip all this pattern stuff
+            continue; // Skip all the  pattern stuff
         }
 
         if (pattern_searching)
@@ -134,7 +140,7 @@ void Parser::parse()
             // pattern_searching = true;
         }
 
-        // Working pattern list, for appending and removing 
+        // Working pattern list, for appending and removing
         // so we don't screw up the list we're iterating through
         workingWorking = workingPatterns;
 
@@ -145,12 +151,12 @@ void Parser::parse()
         for (auto & pattern : workingPatterns)
         {
             // If the pattern has been completed but we're still going, then it is invalidated
-            // we need to remove it and skip this loop, and check if it is the fufilledPattern
             if (pattern.getFinished())
             {
                 std::cout << "PATTERN INVALIDATED: " << pattern.getName() << std::endl;
                 workingWorking[i].markForDeletion();
-                fufilledPattern = NULL;
+                // Don't forget to increment the iterator!!!!!!!!!
+                i++;
                 continue;
             }
 
@@ -187,11 +193,9 @@ void Parser::parse()
                 }
 
                 // If it is the end of a pattern, then we're FINISHED!
-                if (pattern.getDepth() == pattern.getReqs().size()-1)
+                if (pattern.getDepth() == pattern.getReqs().size() - 1)
                 {
                     workingWorking[i].finish();
-                    // Potentially the fufilledPattern!
-                    fufilledPattern = &workingWorking[i];
 
                     if (settings.debug_patterns)
                         std::cout << "\tPATTERN FINISHED: " << pattern.getName() << std::endl;
@@ -200,34 +204,32 @@ void Parser::parse()
             else
             {
                 // IT DOESN'T MATCH :(
-                // If not new-pattern-searching, then we need to remove this invalidated pattern
+                workingWorking[i].markForDeletion();
                 if (!pattern_searching)
                 {
-                    // workingWorking.erase(std::begin(workingPatterns) + i);
-                    workingWorking[i].markForDeletion();
-                    // Fix potential bug of deletion screwing up iterator position and indexing?
-
                     if (settings.debug_patterns)
-                    {
                         std::cout << "PATTERN REMOVED: " << pattern.getName() << std::endl;
-                    }
                 }
                 else
                 {
-                    // Pattern denied in pattern_searching process
                     if (settings.debug_patterns)
                         std::cout << "PATTERN DENIED: " << pattern.getName() << std::endl;
                 }
             }
 
+
             // DEBUG DUMP
-            std::cout << "\t\t" << "req: " << patternreq << std::endl;
-            std::cout << "\t\t" << "tok: " << token.getWord() << std::endl;
-            std::cout << "\t\t" << "forloop iter: " << i << std::endl;
-            std::cout << "\t\t" << "tokeniter: " << token_iter << std::endl;
+            if (settings.debug_patterns)
+            {
+                std::cout << "\t\t" << "req: " << patternreq << std::endl;
+                std::cout << "\t\t" << "tok: " << token.getWord() << std::endl;
+                std::cout << "\t\t" << "patterns iter: " << i << std::endl;
+                std::cout << "\t\t" << "tokens iter: " << token_iter << std::endl;
+            }
 
             i++;
         }
+
 
         // Update working patterns
         workingPatterns = workingWorking;
@@ -249,10 +251,9 @@ void Parser::parse()
         workingPatterns = workingWorking;
 
         // IF THERE ARE NO MATCHING PATTERNS
-
         if (workingPatterns.size() == 0)
         {
-            errorHandler.invokeError(ErrorType::noMatchingPatterns, token.getLine());
+            // errorHandler.invokeError(ErrorType::noMatchingPatterns, token.getLine());
         }
 
         // Reset pattern_searching after one go-around
