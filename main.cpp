@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 
     LexerSettings lexerSettings;
     lexerSettings.debug_words = false;
-    lexerSettings.debug_tokens = true;
+    lexerSettings.debug_tokens = false;
 
     Lexer lexer(fcontents, lexerSettings, errorHandler);
     lexer.lex();

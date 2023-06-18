@@ -1,5 +1,1 @@
 var int x int;
-\
-var int y;
-var string msg "hi";
-\

@@ -2,8 +2,9 @@
 *.o
 # ignore build file
 /a.exe
-# ignore yeet file
+# ignore yeet files
 /brainstorm.txt
+*.bat
 # ignore .vscode
 .vscode/
 # ignore replit stuff
