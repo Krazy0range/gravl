@@ -253,7 +253,7 @@ void Parser::parse()
         // IF THERE ARE NO MATCHING PATTERNS
         if (workingPatterns.size() == 0)
         {
-            // errorHandler.invokeError(ErrorType::noMatchingPatterns, token.getLine());
+            errorHandler.invokeError(ErrorType::noMatchingPatterns, token.getLine());
         }
 
         // Reset pattern_searching after one go-around
