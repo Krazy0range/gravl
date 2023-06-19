@@ -5,8 +5,9 @@
 # ignore yeet files
 /brainstorm.txt
 *.bat
-# ignore .vscode
+# ignore vscode stuff
 .vscode/
+*.code-workspace
 # ignore replit stuff
 .ccls-cache/
 /.replit
