@@ -91,13 +91,16 @@ void connectNodes(Node *parent, Node *child)
 
 void Parser::parse()
 {
+
     // Split the gravl code by statements
     auto statements = splitStatements(tokens);
+
+    Node *baseNode = main;
 
     for (auto & statement : statements)
     {
         Node *node = matchPattern(statement);
-        connectNodes(main, node);
+        connectNodes(baseNode, node);
     }
 
     if (settings.debug_node_tree)
