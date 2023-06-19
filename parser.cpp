@@ -6,6 +6,83 @@
 #include "parser.h"
 #include "errors.h"
 
+
+/*
+    ==============PARSER==============
+*/
+
+Parser::Parser(std::vector<Token> tokens, ParserSettings settings, ErrorHandler errorHandler)
+{
+    this->tokens = tokens;
+    this->settings = settings;
+    this->errorHandler = errorHandler;
+
+    // Initialize the main node
+    Token empty("main", TokenType::none, 0);
+    main = new Node(empty);
+}
+
+Node *makeNode(Token token, Node *parent)
+{
+    Node *node = new Node(token); // Create a new node
+    parent->children.push_back(node); // Add the node to its parent's children list
+
+    return node;
+}
+
+void connectNodes(Node *parent, Node *child)
+{
+    parent->children.push_back(child);
+}
+
+/*
+    PARSE!
+*/
+
+void Parser::parse()
+{
+
+    // Split the gravl code by statements
+    auto statements = splitStatements(tokens);
+
+    Node *baseNode = main;
+
+    for (auto & statement : statements)
+    {
+        Node *node = matchPattern(statement);
+        connectNodes(baseNode, node);
+    }
+
+    if (settings.debug_node_tree)
+        debug();
+}
+
+// Split statements
+std::vector<std::vector<Token>> Parser::splitStatements(std::vector<Token> tokens)
+{
+    std::vector<std::vector<Token>> statements;
+    std::vector<Token> statement;
+
+    for (auto & token : tokens)
+    {
+        statement.push_back(token);
+
+        if (token.getType() == TokenType::endcommand)
+        {
+            statements.push_back(statement);
+            statement.clear();
+        }
+    }
+
+    return statements;
+}
+
+/*
+    ==============PATTERN MATCHING CODE==============
+    DIS DA BIGGEST BOI!!!!!111!!1!1!!1!!
+*/
+
+
 /*
     PARSER PATTERNS
 */
@@ -58,82 +135,84 @@ ParserPatterns::ParserPatterns()
 ParserPatterns parserPatterns;
 
 /*
-    ==============PARSER==============
+    AND ONTO THE REAL STUFF!!!
 */
 
-Parser::Parser(std::vector<Token> tokens, ParserSettings settings, ErrorHandler errorHandler)
-{
-    this->tokens = tokens;
-    this->settings = settings;
-    this->errorHandler = errorHandler;
-
-    // Initialize the main node
-    Token empty("main", TokenType::none, 0);
-    main = new Node(empty);
-}
-
-Node *makeNode(Token token, Node *parent)
-{
-    Node *node = new Node(token); // Create a new node
-    parent->children.push_back(node); // Add the node to its parent's children list
-
-    return node;
-}
-
-void connectNodes(Node *parent, Node *child)
-{
-    parent->children.push_back(child);
-}
+std::vector<std::string> split(std::string text);
+void buildPatternNodes(Node *head, std::vector<Token> tokens);
+void matchPatternSegment(std::vector<Pattern> & workingPatterns, std::vector<Pattern> & workingWorking, Token & token, bool & pattern_searching, bool & debug_patterns, int & token_count);
+void deleteMarkedPatterns(std::vector<Pattern> & workingPatterns, std::vector<Pattern> & workingWorking);
+void handlePatternFinishing(std::vector<Pattern> & workingPatterns, std::vector<Token> & tokens, Token & token, Node *& head, ErrorHandler & errorHandler, bool & debug_patterns);
 
 /*
-    PARSE!
+    MATCH DOSE PATTERNS!!!1!1!11?!/1/!?/1!
+    It's beautiful ;w;
 */
-
-void Parser::parse()
+Node *Parser::matchPattern(std::vector<Token> tokens)
 {
+    static int token_count = 0;
 
-    // Split the gravl code by statements
-    auto statements = splitStatements(tokens);
+    // Head node with empty token
+    Node *head = new Node(Token("", TokenType::none, 0));
 
-    Node *baseNode = main;
+    std::vector<Pattern> patternLists = parserPatterns.getPatterns();
+    std::vector<Pattern> workingPatterns;
+    std::vector<Pattern> workingWorking;
 
-    for (auto & statement : statements)
+    bool pattern_searching = true;
+
+    for (auto t = tokens.begin(); t != tokens.end(); ++t)
     {
-        Node *node = matchPattern(statement);
-        connectNodes(baseNode, node);
-    }
 
-    if (settings.debug_node_tree)
-        debug();
-}
-
-/*
-    SPLIT STATEMENTS
-*/
-std::vector<std::vector<Token>> Parser::splitStatements(std::vector<Token> tokens)
-{
-    std::vector<std::vector<Token>> statements;
-    std::vector<Token> statement;
-
-    for (auto & token : tokens)
-    {
-        statement.push_back(token);
+        Token token = *t;
 
         if (token.getType() == TokenType::endcommand)
         {
-            statements.push_back(statement);
-            statement.clear();
+            handlePatternFinishing(workingPatterns, tokens, token, head, errorHandler, settings.debug_patterns);
+            token_count++; // Keep this updated
+            continue;
         }
+
+        // Starting off with no working patterns
+        if (pattern_searching)
+            workingPatterns = patternLists;
+
+        // Update workingWorking
+        workingWorking = workingPatterns;
+
+        // DIS DA BIG BOI
+        matchPatternSegment(workingPatterns, workingWorking, token, pattern_searching, settings.debug_patterns, token_count);
+
+        // Update workingPatterns
+        workingPatterns = workingWorking;
+
+        // Delete the patterns marked for deletion
+        deleteMarkedPatterns(workingPatterns, workingWorking);
+
+        // Update working patterns again xd
+        workingPatterns = workingWorking;
+
+        // If there are no matching patterns ;-;
+        if (workingPatterns.size() == 0)
+            errorHandler.invokeError(ErrorType::noMatchingPatterns, token.getLine());
+
+        // Reset pattern_searching after one go-around
+        pattern_searching = false;
+
+        // Keep track of how many tokens we've gone through
+        token_count++;
     }
 
-    return statements;
+    if (settings.debug_patterns)
+        std::cout << std::endl;
+    
+    // Return the final head node with all the children attached
+    return head;
+
 }
 
-// Function definition below
-std::vector<std::string> split(std::string text);
-
 /*
-    MATCH PATTERN
+    ALL DAT CODE BEHIND THE CURTAINS
 */
 
 void buildPatternNodes(Node *head, std::vector<Token> tokens)
@@ -145,6 +224,7 @@ void buildPatternNodes(Node *head, std::vector<Token> tokens)
     }
 }
 
+// THE MEATY BOIIIII :heart_eyes:
 void matchPatternSegment(std::vector<Pattern> & workingPatterns, std::vector<Pattern> & workingWorking, Token & token, bool & pattern_searching, bool & debug_patterns, int & token_count)
 {
     int i = 0; // Iterator for removing patterns
@@ -281,71 +361,8 @@ void handlePatternFinishing(std::vector<Pattern> & workingPatterns, std::vector<
 }
 
 /*
-    MATCH DOE PATTERNS!!!1!1!11?!/1/!?/1!
+    smol stuf i forgor ;-;
 */
-Node *Parser::matchPattern(std::vector<Token> tokens)
-{
-    static int token_count = 0;
-
-    // Head node with empty token
-    Node *head = new Node(Token("", TokenType::none, 0));
-
-    std::vector<Pattern> patternLists = parserPatterns.getPatterns();
-    std::vector<Pattern> workingPatterns;
-    std::vector<Pattern> workingWorking;
-
-    bool pattern_searching = true;
-
-    for (auto t = tokens.begin(); t != tokens.end(); ++t)
-    {
-
-        Token token = *t;
-
-        if (token.getType() == TokenType::endcommand)
-        {
-            handlePatternFinishing(workingPatterns, tokens, token, head, errorHandler, settings.debug_patterns);
-            token_count++; // Keep this updated
-            continue;
-        }
-
-        // Starting off with no working patterns
-        if (pattern_searching)
-            workingPatterns = patternLists;
-
-        // Working pattern list, for appending and removing
-        // so we don't screw up the list we're iterating through
-        workingWorking = workingPatterns;
-
-        // DIS DA BIG BOI
-        matchPatternSegment(workingPatterns, workingWorking, token, pattern_searching, settings.debug_patterns, token_count);
-
-        // Update working patterns
-        workingPatterns = workingWorking;
-
-        // DIS A MINI BOI
-        deleteMarkedPatterns(workingPatterns, workingWorking);
-
-        // Update working patterns again xd
-        workingPatterns = workingWorking;
-
-        // If there are no matching patterns ;-;
-        if (workingPatterns.size() == 0)
-            errorHandler.invokeError(ErrorType::noMatchingPatterns, token.getLine());
-
-        // Reset pattern_searching after one go-around
-        pattern_searching = false;
-
-        // Keep track of how many tokens we've gone through
-        token_count++;
-    }
-
-    if (settings.debug_patterns)
-        std::cout << std::endl;
-    
-    // Return the final head node with all the children attached
-    return head;
-
-}
 
 void Parser::debug()
 {
