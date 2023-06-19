@@ -72,7 +72,7 @@ Parser::Parser(std::vector<Token> tokens, ParserSettings settings, ErrorHandler 
     main = new Node(empty);
 }
 
-Node *Parser::make_node(Token token, Node *parent)
+Node *makeNode(Token token, Node *parent)
 {
     Node *node = new Node(token); // Create a new node
     parent->children.push_back(node); // Add the node to its parent's children list
@@ -80,31 +80,74 @@ Node *Parser::make_node(Token token, Node *parent)
     return node;
 }
 
+void connectNodes(Node *parent, Node *child)
+{
+    parent->children.push_back(child);
+}
+
 /*
     PARSE!
 */
 
+void Parser::parse()
+{
+    // Split the gravl code by statements
+    auto statements = splitStatements(tokens);
+
+    for (auto & statement : statements)
+    {
+        Node *node = matchPattern(statement);
+        connectNodes(main, node);
+    }
+
+    if (settings.debug_node_tree)
+        debug();
+}
+
+/*
+    SPLIT STATEMENTS
+*/
+std::vector<std::vector<Token>> Parser::splitStatements(std::vector<Token> tokens)
+{
+    std::vector<std::vector<Token>> statements;
+    std::vector<Token> statement;
+
+    for (auto & token : tokens)
+    {
+        statement.push_back(token);
+
+        if (token.getType() == TokenType::endcommand)
+        {
+            statements.push_back(statement);
+            statement.clear();
+        }
+    }
+
+    return statements;
+}
+
 // Function definition below
 std::vector<std::string> split(std::string text);
 
-void Parser::parse()
+/*
+    MATCH PATTERN
+*/
+Node *Parser::matchPattern(std::vector<Token> tokens)
 {
-    // std::vector<Node *> baseNodes = {main};
-    // int depth = 0;
-    // Node *node;
 
-    std::vector<Pattern> patternLists = parserPatterns.getPatterns();
-    std::vector<Pattern> workingPatterns;
-    std::vector<Pattern> workingWorking;
+    static std::vector<Pattern> patternLists = parserPatterns.getPatterns();
+    static std::vector<Pattern> workingPatterns;
+    static std::vector<Pattern> workingWorking;
     bool pattern_searching = true;
 
-    int token_iter = 0;
+    Token ghost_token("placeholder", TokenType::none, 0);
+    Node *head = new Node(ghost_token);
 
+    int token_count = 0;
     for (auto t = tokens.begin(); t != tokens.end(); ++t)
     {
 
-        Token token = *t; 
-        // Node *baseNode = baseNodes[depth];
+        Token token = *t;
 
         if (token.getType() == TokenType::endcommand)
         {
@@ -224,7 +267,7 @@ void Parser::parse()
                 std::cout << "\t\t" << "req: " << patternreq << std::endl;
                 std::cout << "\t\t" << "tok: " << token.getWord() << std::endl;
                 std::cout << "\t\t" << "patterns iter: " << i << std::endl;
-                std::cout << "\t\t" << "tokens iter: " << token_iter << std::endl;
+                std::cout << "\t\t" << "tokens iter: " << token_count << std::endl;
                 std::cout << "\x1b[0m";
             }
 
@@ -260,11 +303,14 @@ void Parser::parse()
         // Reset pattern_searching after one go-around
         pattern_searching = false;
 
-        token_iter++;
+        token_count++;
     }
 
-    if (settings.debug_node_tree)
-        debug();
+    if (settings.debug_patterns)
+        std::cout << std::endl;
+    
+    return head;
+
 }
 
 void Parser::debug()

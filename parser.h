@@ -26,10 +26,11 @@ class Parser
         ParserSettings settings;
         ErrorHandler errorHandler;
         void _debug(Node *node, int indent);
+        Node *matchPattern(std::vector<Token> tokens);
+        std::vector<std::vector<Token>> splitStatements(std::vector<Token> tokens);
     
     public:
         Parser(std::vector<Token> tokens, ParserSettings settings, ErrorHandler errorHandler);
-        Node *make_node(Token token, Node *parent);
         void parse();
         void debug();
 };

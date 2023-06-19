@@ -39,8 +39,8 @@ int main(int argc, char *argv[])
 
     auto lexerTokens = lexer.getTokens();
     ParserSettings parserSettings;
-    parserSettings.debug_node_tree = false;
     parserSettings.debug_patterns = true;
+    parserSettings.debug_node_tree = true;
 
     Parser parser(lexerTokens, parserSettings, errorHandler);
     parser.parse();
