@@ -1,3 +1,1 @@
-var int x 5;
-var int y 3;
-var int z 15;
+let string name x;
