@@ -236,18 +236,66 @@ void matchPatternSegment(std::vector<Pattern> & workingPatterns, std::vector<Pat
     }
 }
 
+void deleteMarkedPatterns(std::vector<Pattern> & workingPatterns, std::vector<Pattern> & workingWorking)
+{
+    // Loop through workingPatterns
+    // When marked pattern found
+    // Delete from workingWorking and don't advance its iterator
+    auto ww = std::begin(workingWorking); // workingWorking iterator
+    for (auto & wp : workingPatterns) // workingPattern iterator
+    {
+        Pattern pattern = wp;
+        if (pattern.getToBeDeleted())
+            workingWorking.erase(ww);
+        else
+            std::advance(ww, 1);
+    }
+}
+
+void handlePatternFinishing(std::vector<Pattern> & workingPatterns, std::vector<Token> & tokens, Token & token, Node *& head, ErrorHandler & errorHandler, bool & debug_patterns)
+{
+        bool finishedPatternFound = false;
+
+        // Loop through the remain patterns and select the first finished one
+        for (auto & pattern : workingPatterns)
+        {
+            if (pattern.getFinished())
+            {
+                head->token.setWord(pattern.getName());
+
+                // DIS A INNER BIG BOI
+                buildPatternNodes(head, tokens);
+
+                if (debug_patterns)
+                    std::cout << "\x1b[41mFUFILLED PATTERN: " << pattern.getName() << "\x1b[0m" << std::endl;
+                
+                finishedPatternFound = true;
+
+                break;
+            }
+        }
+
+        // Pattern not completed before finish?
+        if (!finishedPatternFound)
+            errorHandler.invokeError(ErrorType::noMatchingPatterns, token.getLine());
+}
+
+/*
+    MATCH DOE PATTERNS!!!1!1!11?!/1/!?/1!
+*/
 Node *Parser::matchPattern(std::vector<Token> tokens)
 {
-    // Static to conserve memory?? idk
-    static std::vector<Pattern> patternLists = parserPatterns.getPatterns();
-    static std::vector<Pattern> workingPatterns;
-    static std::vector<Pattern> workingWorking;
+    static int token_count = 0;
+
+    // Head node with empty token
+    Node *head = new Node(Token("", TokenType::none, 0));
+
+    std::vector<Pattern> patternLists = parserPatterns.getPatterns();
+    std::vector<Pattern> workingPatterns;
+    std::vector<Pattern> workingWorking;
+
     bool pattern_searching = true;
 
-    Token ghost_token("placeholder", TokenType::none, 0);
-    Node *head = new Node(ghost_token);
-
-    int token_count = 0;
     for (auto t = tokens.begin(); t != tokens.end(); ++t)
     {
 
@@ -255,80 +303,46 @@ Node *Parser::matchPattern(std::vector<Token> tokens)
 
         if (token.getType() == TokenType::endcommand)
         {
-            bool finishedPatternFound = false;
-
-            // Loop through the remain patterns and select the first finished one
-            for (auto & pattern : workingPatterns)
-            {
-                if (pattern.getFinished())
-                {
-                    head->token.setWord(pattern.getName());
-                    buildPatternNodes(head, tokens);
-
-                    if (settings.debug_patterns)
-                        std::cout << "\x1b[41mFUFILLED PATTERN: " << pattern.getName() << "\x1b[0m" << std::endl;
-                    
-                    // Reset stuff
-                    finishedPatternFound = true;
-                    workingPatterns.clear();
-                    pattern_searching = true;
-                    break;
-                }
-            }
-
-            // Pattern not completed before finish?
-            if (!finishedPatternFound)
-                errorHandler.invokeError(ErrorType::noMatchingPatterns, token.getLine());
-
-            continue; // Skip all the  pattern stuff
+            handlePatternFinishing(workingPatterns, tokens, token, head, errorHandler, settings.debug_patterns);
+            token_count++; // Keep this updated
+            continue;
         }
 
+        // Starting off with no working patterns
         if (pattern_searching)
-        {
             workingPatterns = patternLists;
-            // pattern_searching = true;
-        }
 
         // Working pattern list, for appending and removing
         // so we don't screw up the list we're iterating through
         workingWorking = workingPatterns;
 
+        // DIS DA BIG BOI
         matchPatternSegment(workingPatterns, workingWorking, token, pattern_searching, settings.debug_patterns, token_count);
 
         // Update working patterns
         workingPatterns = workingWorking;
 
-        // Loop through workingPatterns
-        // When marked pattern found
-        // Delete from workingWorking and don't advance its iterator
-        auto ww = std::begin(workingWorking); // workingWorking iterator
-        for (auto & wp : workingPatterns) // workingPattern iterator
-        {
-            Pattern pattern = wp;
-            if (pattern.getToBeDeleted())
-                workingWorking.erase(ww);
-            else
-                std::advance(ww, 1);
-        }
+        // DIS A MINI BOI
+        deleteMarkedPatterns(workingPatterns, workingWorking);
 
         // Update working patterns again xd
         workingPatterns = workingWorking;
 
-        // IF THERE ARE NO MATCHING PATTERNS
+        // If there are no matching patterns ;-;
         if (workingPatterns.size() == 0)
-        {
             errorHandler.invokeError(ErrorType::noMatchingPatterns, token.getLine());
-        }
 
         // Reset pattern_searching after one go-around
         pattern_searching = false;
 
+        // Keep track of how many tokens we've gone through
         token_count++;
     }
 
     if (settings.debug_patterns)
         std::cout << std::endl;
     
+    // Return the final head node with all the children attached
     return head;
 
 }
