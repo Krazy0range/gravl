@@ -132,9 +132,19 @@ std::vector<std::string> split(std::string text);
 /*
     MATCH PATTERN
 */
+
+void buildPatternNodes(Node *head, std::vector<Token> tokens)
+{
+    for (auto & token : tokens)
+    {
+        if (token.getType() != TokenType::endcommand)
+            makeNode(token, head);
+    }
+}
+
 Node *Parser::matchPattern(std::vector<Token> tokens)
 {
-
+    // Static to conserve memory?? idk
     static std::vector<Pattern> patternLists = parserPatterns.getPatterns();
     static std::vector<Pattern> workingPatterns;
     static std::vector<Pattern> workingWorking;
@@ -160,9 +170,13 @@ Node *Parser::matchPattern(std::vector<Token> tokens)
                 {
                     // TODO BUILD NODE TREE STUFF
 
+                    head->token.setWord(pattern.getName());
+                    buildPatternNodes(head, tokens);
+
                     if (settings.debug_patterns)
                         std::cout << "\x1b[41mFUFILLED PATTERN: " << pattern.getName() << "\x1b[0m" << std::endl;
                     
+                    // Reset stuff
                     finishedPatternFound = true;
                     workingPatterns.clear();
                     pattern_searching = true;

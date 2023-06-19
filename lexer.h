@@ -30,6 +30,7 @@ class Token
     public:
         Token(std::string word, TokenType type, int line);
         std::string getWord();
+        void setWord(std::string text);
         TokenType getType();
         int getLine();
 };

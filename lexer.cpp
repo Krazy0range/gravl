@@ -85,6 +85,11 @@ std::string Token::getWord()
     return word;
 }
 
+void Token::setWord(std::string text)
+{
+    word = text;
+}
+
 TokenType Token::getType()
 {
     return type;
