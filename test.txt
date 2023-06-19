@@ -1,1 +1,3 @@
-let string name x;
+let int x;
+let int y;
+let int z;

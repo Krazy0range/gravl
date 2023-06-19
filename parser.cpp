@@ -189,7 +189,7 @@ void Parser::parse()
                 // Debug after pattern start for style purposes
                 if (settings.debug_patterns)
                 {
-                    std::cout << "\tPATTERN REQ MATCHED: " << pattern.getName() << "\treq: " << patternreq << "\ttok: " << token.getWord() << std::endl;
+                    std::cout << "\tPATTERN REQ MATCHED: " << pattern.getName()  << std::endl;
                 }
 
                 // If it is the end of a pattern, then we're FINISHED!
@@ -217,14 +217,15 @@ void Parser::parse()
                 }
             }
 
-
             // DEBUG DUMP
-            if (settings.debug_patterns && false)
+            if (settings.debug_patterns)
             {
-                std::cout << "\t\t" << "req: " << patternreq ;//<< std::endl;
-                std::cout << "\t\t" << "tok: " << token.getWord() ;//<< std::endl;
-                std::cout << "\t\t" << "patterns iter: " << i ;//<< std::endl;
+                std::cout << "\x1b[2m";
+                std::cout << "\t\t" << "req: " << patternreq << std::endl;
+                std::cout << "\t\t" << "tok: " << token.getWord() << std::endl;
+                std::cout << "\t\t" << "patterns iter: " << i << std::endl;
                 std::cout << "\t\t" << "tokens iter: " << token_iter << std::endl;
+                std::cout << "\x1b[0m";
             }
 
             i++;
