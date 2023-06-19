@@ -145,6 +145,97 @@ void buildPatternNodes(Node *head, std::vector<Token> tokens)
     }
 }
 
+void matchPatternSegment(std::vector<Pattern> & workingPatterns, std::vector<Pattern> & workingWorking, Token & token, bool & pattern_searching, bool & debug_patterns, int & token_count)
+{
+    int i = 0; // Iterator for removing patterns
+    /*
+        Loop through all of the patterns and check if the tokens match
+    */
+    for (auto & pattern : workingPatterns)
+    {
+        // If the pattern has been completed but we're still going, then it is invalidated
+        if (pattern.getFinished())
+        {
+            std::cout << "PATTERN INVALIDATED: " << pattern.getName() << std::endl;
+            workingWorking[i].markForDeletion();
+            // Don't forget to increment the iterator!!!!!!!!!
+            i++;
+            continue;
+        }
+
+        auto patternreq = pattern.getReqs()[pattern.getDepth()]; // Get the item of the pattern matching its depth
+        auto patternparsed = split(patternreq); // Split it (for when there are params) also random name don't ask
+        // If the first item of patternparsed matches the token, AND it's just one param OR there are multiple params and the token matches
+        std::string tokentype_string = TokenList::tokentype_true_string(token.getType());
+
+        bool patternparsed0_matches_token = patternparsed[0] == tokentype_string;
+        bool just_one_param = patternparsed.size() == 1;
+        bool multiple_params = patternparsed.size() > 1;
+        bool token_matches_params = std::find(std::begin(patternparsed) + 1, std::end(patternparsed), token.getWord()) != std::end(patternparsed);
+        if ((patternparsed0_matches_token) && (just_one_param || (multiple_params && token_matches_params)))
+        {
+            // IT MATCHES THE PATTERN!
+            // Increment the workingWorking pattern's depth
+            // This has caused so many problems ;-;
+            workingWorking[i].incDepth();
+            
+            if (pattern_searching)
+            {
+                // If we are pattern searching, then append it
+                // ACTUALLY DONT! It's already here because we copied the starter patterns
+                // We only have to remove the ones that don't match
+                // workingWorking.push_back(pattern);
+
+                if (debug_patterns)
+                    std::cout << "PATTERN STARTED: " << pattern.getName() << std::endl;
+            }
+
+            // Debug after pattern start for style purposes
+            if (debug_patterns)
+            {
+                std::cout << "\tPATTERN REQ MATCHED: " << pattern.getName()  << std::endl;
+            }
+
+            // If it is the end of a pattern, then we're FINISHED!
+            if (pattern.getDepth() == pattern.getReqs().size() - 1)
+            {
+                workingWorking[i].finish();
+
+                if (debug_patterns)
+                    std::cout << "\tPATTERN FINISHED: " << pattern.getName() << std::endl;
+            }
+        }
+        else
+        {
+            // IT DOESN'T MATCH :(
+            workingWorking[i].markForDeletion();
+            if (!pattern_searching)
+            {
+                if (debug_patterns)
+                    std::cout << "PATTERN REMOVED: " << pattern.getName() << std::endl;
+            }
+            else
+            {
+                if (debug_patterns)
+                    std::cout << "PATTERN DENIED: " << pattern.getName() << std::endl;
+            }
+        }
+
+        // DEBUG DUMP
+        if (debug_patterns)
+        {
+            std::cout << "\x1b[2m";
+            std::cout << "\t\t" << "req: " << patternreq << std::endl;
+            std::cout << "\t\t" << "tok: " << token.getWord() << std::endl;
+            std::cout << "\t\t" << "patterns iter: " << i << std::endl;
+            std::cout << "\t\t" << "tokens iter: " << token_count << std::endl;
+            std::cout << "\x1b[0m";
+        }
+
+        i++;
+    }
+}
+
 Node *Parser::matchPattern(std::vector<Token> tokens)
 {
     // Static to conserve memory?? idk
@@ -171,8 +262,6 @@ Node *Parser::matchPattern(std::vector<Token> tokens)
             {
                 if (pattern.getFinished())
                 {
-                    // TODO BUILD NODE TREE STUFF
-
                     head->token.setWord(pattern.getName());
                     buildPatternNodes(head, tokens);
 
@@ -204,93 +293,7 @@ Node *Parser::matchPattern(std::vector<Token> tokens)
         // so we don't screw up the list we're iterating through
         workingWorking = workingPatterns;
 
-        int i = 0; // Iterator for removing patterns
-        /*
-            Loop through all of the patterns and check if the tokens match
-        */
-        for (auto & pattern : workingPatterns)
-        {
-            // If the pattern has been completed but we're still going, then it is invalidated
-            if (pattern.getFinished())
-            {
-                std::cout << "PATTERN INVALIDATED: " << pattern.getName() << std::endl;
-                workingWorking[i].markForDeletion();
-                // Don't forget to increment the iterator!!!!!!!!!
-                i++;
-                continue;
-            }
-
-            auto patternreq = pattern.getReqs()[pattern.getDepth()]; // Get the item of the pattern matching its depth
-            auto patternparsed = split(patternreq); // Split it (for when there are params) also random name don't ask
-            // If the first item of patternparsed matches the token, AND it's just one param OR there are multiple params and the token matches
-            std::string tokentype_string = TokenList::tokentype_true_string(token.getType());
-
-            bool patternparsed0_matches_token = patternparsed[0] == tokentype_string;
-            bool just_one_param = patternparsed.size() == 1;
-            bool multiple_params = patternparsed.size() > 1;
-            bool token_matches_params = std::find(std::begin(patternparsed) + 1, std::end(patternparsed), token.getWord()) != std::end(patternparsed);
-            if ((patternparsed0_matches_token) && (just_one_param || (multiple_params && token_matches_params)))
-            {
-                // IT MATCHES THE PATTERN!
-                // Increment the workingWorking pattern's depth
-                workingWorking[i].incDepth();
-                
-                if (pattern_searching)
-                {
-                    // If we are pattern searching, then append it
-                    // ACTUALLY DONT! It's already here because we copied the starter patterns
-                    // We only have to remove the ones that don't match
-                    // workingWorking.push_back(pattern);
-
-                    if (settings.debug_patterns)
-                        std::cout << "PATTERN STARTED: " << pattern.getName() << std::endl;
-                }
-
-                // Debug after pattern start for style purposes
-                if (settings.debug_patterns)
-                {
-                    std::cout << "\tPATTERN REQ MATCHED: " << pattern.getName()  << std::endl;
-                }
-
-                // If it is the end of a pattern, then we're FINISHED!
-                if (pattern.getDepth() == pattern.getReqs().size() - 1)
-                {
-                    workingWorking[i].finish();
-
-                    if (settings.debug_patterns)
-                        std::cout << "\tPATTERN FINISHED: " << pattern.getName() << std::endl;
-                }
-            }
-            else
-            {
-                // IT DOESN'T MATCH :(
-                workingWorking[i].markForDeletion();
-                if (!pattern_searching)
-                {
-                    if (settings.debug_patterns)
-                        std::cout << "PATTERN REMOVED: " << pattern.getName() << std::endl;
-                }
-                else
-                {
-                    if (settings.debug_patterns)
-                        std::cout << "PATTERN DENIED: " << pattern.getName() << std::endl;
-                }
-            }
-
-            // DEBUG DUMP
-            if (settings.debug_patterns)
-            {
-                std::cout << "\x1b[2m";
-                std::cout << "\t\t" << "req: " << patternreq << std::endl;
-                std::cout << "\t\t" << "tok: " << token.getWord() << std::endl;
-                std::cout << "\t\t" << "patterns iter: " << i << std::endl;
-                std::cout << "\t\t" << "tokens iter: " << token_count << std::endl;
-                std::cout << "\x1b[0m";
-            }
-
-            i++;
-        }
-
+        matchPatternSegment(workingPatterns, workingWorking, token, pattern_searching, settings.debug_patterns, token_count);
 
         // Update working patterns
         workingPatterns = workingWorking;
