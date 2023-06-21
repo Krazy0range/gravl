@@ -108,7 +108,6 @@ class Pattern
         auto getToBeDeleted() { return toBeDeleted; }
 };
 
-
 Pattern::Pattern(std::string name, std::vector<std::string> reqs)
 {
     this->name = name;

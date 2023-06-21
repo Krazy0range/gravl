@@ -1,3 +1,2 @@
-let int x;
-let int y;
-let int z;
+var int x 5;
+var int y (x + 5);
