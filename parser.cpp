@@ -204,7 +204,7 @@ Node *Parser::matchPattern(std::vector<Token> tokens)
 
     if (settings.debug_patterns)
         std::cout << std::endl;
-    
+
     // Return the final head node with all the children attached
     return head;
 
@@ -235,7 +235,10 @@ void matchPatternSegment(std::vector<Pattern> & workingPatterns, std::vector<Pat
         // If the pattern has been completed but we're still going, then it is invalidated
         if (pattern.getFinished())
         {
-            std::cout << "PATTERN INVALIDATED: " << pattern.getName() << std::endl;
+            if (debug_patterns)
+            {
+                std::cout << "PATTERN INVALIDATED: " << pattern.getName() << std::endl;
+            }
             workingWorking[i].markForDeletion();
             // Don't forget to increment the iterator!!!!!!!!!
             i++;
